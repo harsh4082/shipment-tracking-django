@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h2>Welcome Admin!</h2>
+
+<div class="mt-4">
+    <a href="{% url 'admin_containers' %}" class="btn btn-success me-2">Manage Containers</a>
+    <a href="{% url 'admin_customers' %}" class="btn btn-primary">Manage Customers</a>
+</div>
+{% endblock %}

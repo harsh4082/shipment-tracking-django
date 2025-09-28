@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Add New Order</h2>
+
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Customer ID Dropdown -->
+        <div class="mb-3">
+            <label for="customer" class="form-label">Customer ID</label>
+            <select class="form-select" name="customer" id="customer" required>
+                <option value="">Select Customer</option>
+                {% for customer in customers %}
+                    <option value="{{ customer.customer_id }}">{{ customer.customer_id }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Container ID Dropdown -->
+        <div class="mb-3">
+            <label for="container" class="form-label">Container ID</label>
+            <select class="form-select" name="container" id="container" required>
+                <option value="">Select Container</option>
+                {% for container in containers %}
+                    <option value="{{ container.container_id }}">{{ container.container_id }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Shipping Mark -->
+        <div class="mb-3">
+            <label for="shipping_mark" class="form-label">Shipping Mark</label>
+            <input type="text" class="form-control" name="shipping_mark" id="shipping_mark" required>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" name="description" id="description" rows="3" required></textarea>
+        </div>
+
+        <!-- Item No / Spec -->
+        <div class="mb-3">
+            <label for="item_no_spec" class="form-label">Item No / Spec</label>
+            <input type="text" class="form-control" name="item_no_spec" id="item_no_spec" required>
+        </div>
+
+        <!-- Material -->
+        <div class="mb-3">
+            <label for="material" class="form-label">Material</label>
+            <input type="text" class="form-control" name="material" id="material">
+        </div>
+
+        <!-- Pictures -->
+        <div class="mb-3">
+            <label for="pictures" class="form-label">Pictures</label>
+            <input type="file" class="form-control" name="pictures" id="pictures">
+        </div>
+
+        <!-- Ctns & Qty per Ctn -->
+        <div class="row mb-3">
+            <div class="col">
+                <label for="ctns" class="form-label">CTNs</label>
+                <input type="number" class="form-control" name="ctns" id="ctns" min="0" required>
+            </div>
+            <div class="col">
+                <label for="qty_per_ctn" class="form-label">Qty per CTN</label>
+                <input type="number" class="form-control" name="qty_per_ctn" id="qty_per_ctn" min="0" required>
+            </div>
+        </div>
+
+        <!-- Unit -->
+        <div class="mb-3">
+            <label for="unit" class="form-label">Unit</label>
+            <input type="text" class="form-control" name="unit" id="unit" required>
+        </div>
+
+        <!-- CBM & Weight -->
+        <div class="row mb-3">
+            <div class="col">
+                <label for="cbm_per_ctn" class="form-label">CBM per CTN</label>
+                <input type="number" step="0.01" class="form-control" name="cbm_per_ctn" id="cbm_per_ctn" required>
+            </div>
+            <div class="col">
+                <label for="cbm" class="form-label">CBM</label>
+                <input type="number" step="0.01" class="form-control" name="cbm" id="cbm" required>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label for="total_cbm" class="form-label">Total CBM</label>
+                <input type="number" step="0.01" class="form-control" name="total_cbm" id="total_cbm" required>
+            </div>
+            <div class="col">
+                <label for="wt_per_ctn" class="form-label">Weight per CTN</label>
+                <input type="number" step="0.01" class="form-control" name="wt_per_ctn" id="wt_per_ctn" required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="total_wt" class="form-label">Total Weight</label>
+            <input type="number" step="0.01" class="form-control" name="total_wt" id="total_wt" required>
+        </div>
+
+        <!-- Supplier -->
+        <div class="mb-3">
+            <label for="supplier" class="form-label">Supplier</label>
+            <input type="text" class="form-control" name="supplier" id="supplier" required>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-primary">Add Order</button>
+    </form>
+</div>
+{% endblock %}

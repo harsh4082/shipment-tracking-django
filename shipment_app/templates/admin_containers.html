@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Admin - Containers{% endblock %}
+
+{% block content %}
+<h2>Containers</h2>
+
+<form method="POST" class="mb-3">
+    {% csrf_token %}
+    <div class="row g-2">
+        <div class="col">
+            <input type="text" name="container_no" placeholder="Container No" class="form-control" required>
+        </div>
+        <div class="col">
+            <input type="text" name="container_name" placeholder="Container Name" class="form-control" required>
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Add Container</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Container ID</th>
+            <th>Container No</th>
+            <th>Container Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for container in containers %}
+        <tr>
+            <td>{{ container.container_id }}</td>
+            <td>{{ container.container_no }}</td>
+            <td>{{ container.container_name }}</td>
+            <td>
+                <a href="{% url 'delete_container' container.container_id %}" 
+                   class="btn btn-danger btn-sm">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center">No containers available</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

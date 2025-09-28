@@ -54,10 +54,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'shipment_project.urls'
 
-TEMPLATES = [
+TEMPLATES = [   
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "shipment_app" / "templates"],  # add this line
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

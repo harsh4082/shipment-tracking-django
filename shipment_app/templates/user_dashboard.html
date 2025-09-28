@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4>Welcome, {{ customer.name }}!</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Customer ID:</strong> {{ customer.customer_id }}</p>
+            <p><strong>User ID:</strong> {{ customer.user_id }}</p>
+            <p><strong>Email:</strong> {{ customer.email }}</p>
+            <p><strong>WhatsApp:</strong> {{ customer.whatsapp_number|default:"Not provided" }}</p>
+            <a href="{% url 'user_update_password' %}" class="btn btn-warning">Update Password</a>
+            <a href="{% url 'user_logout' %}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
