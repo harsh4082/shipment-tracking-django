@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}My Containers{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Your Containers</h2>
+<div class="row g-3">
+  {% for item in container_links %}
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ item.container.container_name }}</h5>
+          <p class="card-text"><strong>ID:</strong> {{ item.container.container_id }}</p>
+          <a href="{% url 'user_container_orders' item.enc_id %}" class="btn btn-primary w-100">View Orders</a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">No containers found.</div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

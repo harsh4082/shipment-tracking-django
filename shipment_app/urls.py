@@ -4,7 +4,9 @@ from . import views
 urlpatterns = [
     path('', views.home, name='home'),
 
+    # -------------------
     # Admin URLs
+    # -------------------
     path('myadmin/login/', views.admin_login, name='admin_login'),
     path('myadmin/logout/', views.admin_logout, name='admin_logout'),
     path('myadmin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
@@ -13,10 +15,30 @@ urlpatterns = [
     path('myadmin/customers/', views.admin_customers, name='admin_customers'),
     path('myadmin/order/add/', views.add_order, name='add_order'),
 
-
+    # -------------------
     # User URLs
+    # -------------------
     path('user/login/', views.user_login, name='user_login'),
     path('user/logout/', views.user_logout, name='user_logout'),
     path('user/dashboard/', views.user_dashboard, name='user_dashboard'),
     path('user/update-password/', views.user_update_password, name='user_update_password'),
+
+    # -------------------
+    # User Order Views
+    # -------------------
+    path('user/containers/', views.user_containers, name='user_containers'),
+    path('user/container/<str:enc_container_id>/', views.user_container_orders, name='user_container_orders'),
+    path('user/container/<str:enc_container_id>/export/pdf/', views.export_orders_pdf, name='export_orders_pdf'),
+    path('user/container/<str:enc_container_id>/export/excel/', views.export_orders_excel, name='export_orders_excel'),
+
+    # -------------------
+    # User Profile Update
+    # -------------------
+    path('user/update-profile/', views.user_update_profile, name='user_update_profile'),
 ]
+
+# -------------------
+# Custom error handlers
+# -------------------
+handler404 = 'shipment_app.views.custom_404_view'
+handler500 = 'shipment_app.views.custom_500_view'  # optional

@@ -3,6 +3,35 @@ from django.contrib import messages
 from functools import wraps
 from .models import AdminTable, Customer, Container
 from .models import Customer, Container, Order
+import io
+import xlsxwriter
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
+from .utils import encrypt_text, decrypt_text
+from django.shortcuts import redirect
+from django.http import HttpResponseNotFound
+from django.shortcuts import render, redirect
+from django.conf import settings
+import os
+import json
+import uuid
+# from io import BytesIO
+# from django.shortcuts import render, redirect, get_object_or_404
+# from django.conf import settings
+# from django.core.files.storage import default_storage
+# from django.contrib import messages
+# from django.views.decorators.http import require_http_methods
+# from django.utils.html import escape
+
+# import openpyxl
+# from openpyxl.utils import get_column_letter
+# from openpyxl.drawing.spreadsheet_drawing import SpreadsheetDrawing
+# from openpyxl.worksheet.worksheet import Worksheet
+# from openpyxl.drawing.image import Image as OpenpyxlImage
+# from PIL import Image as PILImage
+
+# from .models import Customer, Container, Order
+# from .decorators import admin_required  # you used @admin_required earlier
 
 # ----------------------------
 # Decorators
@@ -226,3 +255,256 @@ def user_logout(request):
     request.session.flush()
     messages.success(request, "User logged out successfully")
     return redirect('user_login')
+
+# ----------------------------
+# User Containers (list only user's containers)
+# ----------------------------
+@customer_required
+def user_containers(request):
+    customer_id = request.session.get('customer_id')
+    # Get unique containers for this customer
+    containers = Container.objects.filter(order__customer_id=customer_id).distinct()
+    return render(request, "user_containers.html", {"containers": containers})
+
+
+# ----------------------------
+# Orders inside selected container
+# ----------------------------
+@customer_required
+def user_container_orders(request, container_id):
+    customer_id = request.session.get('customer_id')
+    container = get_object_or_404(Container, container_id=container_id)
+    orders = Order.objects.filter(container=container, customer_id=customer_id)
+    return render(request, "user_container_orders.html", {
+        "container": container,
+        "orders": orders
+    })
+
+
+# ----------------------------
+# Export Orders to PDF
+# ----------------------------
+@customer_required
+def export_orders_pdf(request, container_id):
+    customer_id = request.session.get('customer_id')
+    container = get_object_or_404(Container, container_id=container_id)
+    orders = Order.objects.filter(container=container, customer_id=customer_id)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="orders_{container_id}.pdf"'
+
+    p = canvas.Canvas(response)
+    p.setFont("Helvetica", 12)
+    p.drawString(100, 800, f"Orders for Container {container_id}")
+
+    y = 770
+    for order in orders:
+        p.drawString(100, y, f"Shipping Mark: {order.shipping_mark} | "
+                             f"Item: {order.item_no_spec} | Qty: {order.total_qty}")
+        y -= 20
+        if y < 50:
+            p.showPage()
+            p.setFont("Helvetica", 12)
+            y = 770
+
+    p.showPage()
+    p.save()
+    return response
+
+
+# ----------------------------
+# Export Orders to Excel
+# ----------------------------
+@customer_required
+def export_orders_excel(request, container_id):
+    customer_id = request.session.get('customer_id')
+    container = get_object_or_404(Container, container_id=container_id)
+    orders = Order.objects.filter(container=container, customer_id=customer_id)
+
+    output = io.BytesIO()
+    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet()
+
+    # Headers
+    headers = ["Shipping Mark", "Description", "Item No", "Material",
+               "CTNs", "Qty/CTN", "Total Qty", "Unit", "Supplier"]
+    for col, header in enumerate(headers):
+        worksheet.write(0, col, header)
+
+    # Rows
+    for row, order in enumerate(orders, start=1):
+        worksheet.write(row, 0, order.shipping_mark)
+        worksheet.write(row, 1, order.description)
+        worksheet.write(row, 2, order.item_no_spec)
+        worksheet.write(row, 3, order.material or "")
+        worksheet.write(row, 4, order.ctns)
+        worksheet.write(row, 5, order.qty_per_ctn)
+        worksheet.write(row, 6, order.total_qty)
+        worksheet.write(row, 7, order.unit)
+        worksheet.write(row, 8, order.supplier)
+
+    workbook.close()
+    output.seek(0)
+
+    response = HttpResponse(output.read(),
+                            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = f'attachment; filename="orders_{container_id}.xlsx"'
+    return response
+
+
+# ----------------------------
+# User Containers (list only user's containers)
+# ----------------------------
+@customer_required
+def user_containers(request):
+    customer_id = request.session.get('customer_id')
+    containers = Container.objects.filter(order__customer_id=customer_id).distinct()
+
+    # Add encrypted IDs for URLs
+    container_links = [
+        {
+            'container': c,
+            'enc_id': encrypt_text(c.container_id)
+        }
+        for c in containers
+    ]
+
+    return render(request, "user_containers.html", {"container_links": container_links})
+
+
+# ----------------------------
+# Orders inside selected container
+# ----------------------------
+@customer_required
+def user_container_orders(request, enc_container_id):
+    customer_id = request.session.get('customer_id')
+    container_id = decrypt_text(enc_container_id)
+    container = get_object_or_404(Container, container_id=container_id)
+    orders = Order.objects.filter(container=container, customer_id=customer_id)
+
+    return render(request, "user_container_orders.html", {
+        "container": container,
+        "orders": orders,
+        "enc_container_id": enc_container_id  # for PDF/Excel links
+    })
+
+
+# ----------------------------
+# Export Orders to PDF
+# ----------------------------
+@customer_required
+def export_orders_pdf(request, enc_container_id):
+    customer_id = request.session.get('customer_id')
+    container_id = decrypt_text(enc_container_id)
+    container = get_object_or_404(Container, container_id=container_id)
+    orders = Order.objects.filter(container=container, customer_id=customer_id)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="orders_{container_id}.pdf"'
+
+    p = canvas.Canvas(response)
+    p.setFont("Helvetica", 12)
+    p.drawString(100, 800, f"Orders for Container {container_id}")
+
+    y = 770
+    for order in orders:
+        p.drawString(100, y, f"Shipping Mark: {order.shipping_mark} | "
+                             f"Item: {order.item_no_spec} | Qty: {order.total_qty}")
+        y -= 20
+        if y < 50:
+            p.showPage()
+            p.setFont("Helvetica", 12)
+            y = 770
+
+    p.showPage()
+    p.save()
+    return response
+
+
+# ----------------------------
+# Export Orders to Excel
+# ----------------------------
+@customer_required
+def export_orders_excel(request, enc_container_id):
+    customer_id = request.session.get('customer_id')
+    container_id = decrypt_text(enc_container_id)
+    container = get_object_or_404(Container, container_id=container_id)
+    orders = Order.objects.filter(container=container, customer_id=customer_id)
+
+    output = io.BytesIO()
+    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet()
+
+    # Headers
+    headers = ["Shipping Mark", "Description", "Item No", "Material",
+               "CTNs", "Qty/CTN", "Total Qty", "Unit", "Supplier"]
+    for col, header in enumerate(headers):
+        worksheet.write(0, col, header)
+
+    # Rows
+    for row, order in enumerate(orders, start=1):
+        worksheet.write(row, 0, order.shipping_mark)
+        worksheet.write(row, 1, order.description)
+        worksheet.write(row, 2, order.item_no_spec)
+        worksheet.write(row, 3, order.material or "")
+        worksheet.write(row, 4, order.ctns)
+        worksheet.write(row, 5, order.qty_per_ctn)
+        worksheet.write(row, 6, order.total_qty)
+        worksheet.write(row, 7, order.unit)
+        worksheet.write(row, 8, order.supplier)
+
+    workbook.close()
+    output.seek(0)
+
+    response = HttpResponse(output.read(),
+                            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = f'attachment; filename="orders_{container_id}.xlsx"'
+    return response
+
+# ----------------------------
+# Update Customer Profile
+# ----------------------------
+@customer_required
+def user_update_profile(request):
+    customer_id = request.session.get('customer_id')
+    customer = get_object_or_404(Customer, customer_id=customer_id)
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        whatsapp = request.POST.get("whatsapp_number")
+
+        # Simple validation
+        if not name or not email:
+            messages.error(request, "Name and Email cannot be empty")
+        else:
+            customer.name = name
+            customer.email = email
+            customer.whatsapp_number = whatsapp
+            customer.save()
+            request.session['customer_name'] = customer.name  # Update session
+            messages.success(request, "Profile updated successfully")
+            return redirect('user_dashboard')
+
+    return render(request, "user_update_profile.html", {"customer": customer})
+
+
+
+
+def custom_404_view(request, exception=None):
+    # If not logged in → redirect to login
+    if not request.session.get("admin_id") and not request.session.get("customer_id"):
+        return redirect("user_login")
+
+    # If logged in → redirect to correct dashboard
+    if request.session.get("admin_id"):
+        return redirect("admin_dashboard")
+    elif request.session.get("customer_id"):
+        return redirect("user_dashboard")
+
+    # fallback → show friendly 404 page
+    return render(request, "404.html", status=404)
+
+
+def custom_500_view(request):
+    return render(request, "500.html", status=500)

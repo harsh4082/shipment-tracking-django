@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+# settings.py
+from cryptography.fernet import Fernet
+
+# Generate once, then keep it constant
+FER_KEY = b'4YoSYhP2jKyq3Lzm7CkfZz-nt1DzOIrF7jYPcRRhTho='  # Replace with Fernet.generate_key() output
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,9 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-bqqdo((64zj8_*p2)r%t=1&%15!z+(bnk$=g0cuad&s($@ue$m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']   # make sure this includes your host
 
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -123,3 +129,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"

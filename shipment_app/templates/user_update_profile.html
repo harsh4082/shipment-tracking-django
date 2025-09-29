@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Update Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Update Profile</h4>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ customer.name }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ customer.email }}" required>
+          </div>
+          <div class="mb-3">
+            <label for="whatsapp_number" class="form-label">WhatsApp Number</label>
+            <input type="text" class="form-control" id="whatsapp_number" name="whatsapp_number" value="{{ customer.whatsapp_number }}">
+          </div>
+          <button type="submit" class="btn btn-success w-100">Update Profile</button>
+          <a href="{% url 'user_dashboard' %}" class="btn btn-secondary w-100 mt-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
