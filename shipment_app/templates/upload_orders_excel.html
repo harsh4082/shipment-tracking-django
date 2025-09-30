@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Upload Orders from Excel</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="mb-5">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Select Container</label>
+            <select class="form-select" name="container" required>
+                <option value="">-- Select Container --</option>
+                {% for container in containers %}
+                    <option value="{{ container.container_id }}"
+                        {% if container.container_id == selected_container %}selected{% endif %}>
+                        {{ container.container_id }} - {{ container.container_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Upload Excel</label>
+            <input type="file" class="form-control" name="excel_file" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Upload & Preview</button>
+    </form>
+
+    {% if preview_data %}
+    <hr>
+    <h4 class="mb-3">Preview Data</h4>
+    <form method="POST" action="{% url 'confirm_orders_excel' %}">
+        {% csrf_token %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        {% for header in preview_data.0.keys %}
+                            <th class="sortable">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in preview_data %}
+                        <tr>
+                            {% for key, value in row.items %}
+                                <td>
+                                    {% if key == "Pictures" and value %}
+                                        {% for img_path in value %}
+                                            <img src="{{ MEDIA_URL }}{{ img_path }}" class="img-thumbnail me-1 zoom-on-hover" width="80" height="80">
+                                        {% endfor %}
+                                    {% else %}
+                                        {{ value }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">Confirm Import</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+    const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+        v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+    )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+    document.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', (() => {
+        const table = th.closest('table');
+        Array.from(table.querySelectorAll('tbody tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+            .forEach(tr => table.querySelector('tbody').appendChild(tr) );
+    })));
+});
+</script>
+
+<style>
+.zoom-on-hover { transition: transform 0.2s; cursor: pointer; }
+.zoom-on-hover:hover { transform: scale(1.5); z-index: 10; position: relative; }
+th.sortable { cursor: pointer; }
+</style>
+{% endblock %}

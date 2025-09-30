@@ -14,6 +14,14 @@ urlpatterns = [
     path('myadmin/containers/delete/<str:container_id>/', views.delete_container, name='delete_container'),
     path('myadmin/customers/', views.admin_customers, name='admin_customers'),
     path('myadmin/order/add/', views.add_order, name='add_order'),
+    # urls.py
+    path('myadmin/order/upload-excel/', views.upload_orders_excel, name='upload_orders_excel'),
+    path('myadmin/order/confirm-excel/', views.confirm_orders_excel, name='confirm_orders_excel'),
+    # ------------------- Admin View Orders -------------------
+    path('myadmin/orders/view/', views.view_orders_by_container, name='view_orders_by_container'),
+    path('myadmin/orders/view-by-customer/', views.view_orders_by_customer, name='view_orders_by_customer'),
+
+
 
     # -------------------
     # User URLs

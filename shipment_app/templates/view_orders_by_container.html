@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Orders by Container</h2>
+
+    <form method="get" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <select name="container" class="form-select" onchange="this.form.submit()">
+                    <option value="">Select Container</option>
+                    {% for container in containers %}
+                        <option value="{{ container.container_id }}" {% if container.container_id == selected_container_id %}selected{% endif %}>
+                            {{ container.container_id }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+
+    {% if orders %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Customer ID</th>
+                    <th>Shipping Mark</th>
+                    <th>Description</th>
+                    <th>Item No./Specification</th>
+                    <th>Material</th>
+                    <th>Pictures</th>
+                    <th>Ctns</th>
+                    <th>Qty/Ctn</th>
+                    <th>Total Qty</th>
+                    <th>Unit</th>
+                    <th>CBM/Ctn</th>
+                    <th>CBM</th>
+                    <th>Total CBM</th>
+                    <th>Wt/Ctn</th>
+                    <th>Total Wt</th>
+                    <th>Supplier</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.customer.customer_id }}</td>
+                    <td>{{ order.shipping_mark }}</td>
+                    <td>{{ order.description }}</td>
+                    <td>{{ order.item_no_spec }}</td>
+                    <td>{{ order.material }}</td>
+                    <td>
+                        {% if order.pictures %}
+                            <img src="{{ MEDIA_URL }}{{ order.pictures }}" alt="Image" width="60">
+                        {% else %}
+                            <span class="text-muted">No Image</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ order.ctns }}</td>
+                    <td>{{ order.qty_per_ctn }}</td>
+                    <td>{{ order.total_qty }}</td>
+                    <td>{{ order.unit }}</td>
+                    <td>{{ order.cbm_per_ctn }}</td>
+                    <td>{{ order.cbm }}</td>
+                    <td>{{ order.total_cbm }}</td>
+                    <td>{{ order.wt_per_ctn }}</td>
+                    <td>{{ order.total_wt }}</td>
+                    <td>{{ order.supplier }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-muted">No orders found for this container.</p>
+    {% endif %}
+</div>
+{% endblock %}

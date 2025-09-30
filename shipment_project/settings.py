@@ -31,6 +31,7 @@ SECRET_KEY = 'django-insecure-bqqdo((64zj8_*p2)r%t=1&%15!z+(bnk$=g0cuad&s($@ue$m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']   # make sure this includes your host
+# ALLOWED_HOSTS = []   # make sure this includes your host
 
 
 
@@ -70,6 +71,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -132,3 +134,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = BASE_DIR / "media"
 MEDIA_URL = "/media/"
+
+

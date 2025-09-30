@@ -24,6 +24,9 @@
           <li class="nav-item"><a class="nav-link" href="{% url 'admin_containers' %}">Containers</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'admin_customers' %}">Customers</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'add_order' %}">Add Order</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'upload_orders_excel' %}">Add Order2</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'view_orders_by_container' %}">View Order</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'view_orders_by_customer' %}">View Customer</a></li>
         {% elif request.session.customer_id %}
           <li class="nav-item"><a class="nav-link" href="{% url 'user_dashboard' %}">Dashboard</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'user_containers' %}">My Containers</a></li>
