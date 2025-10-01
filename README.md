@@ -9,7 +9,7 @@ This is a Django-based shipment management application.
 ### 1. Clone the Repository
 
 ```bash
-git clone [<your-repo-url>](https://github.com/harsh4082/shipment-tracking-django.git)
+git clone [https://github.com/harsh4082/shipment-tracking-django.git]
 cd shipment_project
 ```
 
