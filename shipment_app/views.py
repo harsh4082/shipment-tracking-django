@@ -1,51 +1,27 @@
+# views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from functools import wraps
-from .models import AdminTable, Customer, Container, Order
-import io
-import xlsxwriter
 from django.http import HttpResponse, HttpResponseNotFound
-from reportlab.pdfgen import canvas
-from .utils import encrypt_text, decrypt_text
 from django.conf import settings
-import os
 from django.core import signing
 from django.core.files import File
-from django.core.files.storage import FileSystemStorage
-import openpyxl
+from django.core.files.storage import FileSystemStorage, default_storage
+import os
+import io
 import re
+import xlsxwriter
+import openpyxl
+
+from .models import AdminTable, Customer, Container, Order
+from .utils import generate_password, send_credentials_email, encrypt_text, decrypt_text
+
+from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
-from django.core.files.storage import default_storage
-from django.conf import settings
-import io
-import xlsxwriter
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from .models import Container, Order
-# from .decorators import customer_required
-import os
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.http import HttpResponse
-from django.conf import settings
-from django.core.files import File
-from .models import Container, Order
-from .utils import decrypt_text
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image, Spacer
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
-import os
-import io
-import xlsxwriter
 
 # ----------------------------
 # Decorators
@@ -134,11 +110,6 @@ def delete_container(request, container_id):
     return redirect('admin_containers')
 
 
-# views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Customer
-from .utils import generate_password, send_credentials_email
 # from .decorators import admin_required
 
 @admin_required
