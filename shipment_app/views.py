@@ -32,6 +32,20 @@ from django.shortcuts import get_object_or_404
 from .models import Container, Order
 # from .decorators import customer_required
 import os
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.http import HttpResponse
+from django.conf import settings
+from django.core.files import File
+from .models import Container, Order
+from .utils import decrypt_text
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image, Spacer
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+import os
+import io
+import xlsxwriter
 
 # ----------------------------
 # Decorators
@@ -120,34 +134,74 @@ def delete_container(request, container_id):
     return redirect('admin_containers')
 
 
+# views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Customer
+from .utils import generate_password, send_credentials_email
+# from .decorators import admin_required
+
 @admin_required
 def admin_customers(request):
+    import pandas as pd
+    from .utils import generate_password, send_credentials_email
+    from django.contrib import messages
+
     customers = Customer.objects.all()
 
     if request.method == "POST":
-        customer_id = request.POST.get("customer_id")
-        name = request.POST.get("name")
-        user_id = request.POST.get("user_id")
-        password = request.POST.get("password")
-        email = request.POST.get("email")
-        whatsapp = request.POST.get("whatsapp_number")
+        # Check if XLS upload
+        if "upload_xls" in request.FILES:
+            xls_file = request.FILES['upload_xls']
+            df = pd.read_excel(xls_file)
 
-        if Customer.objects.filter(user_id=user_id).exists():
-            messages.error(request, "User ID already exists")
+            for _, row in df.iterrows():
+                user_id = row['user_id']
+                if Customer.objects.filter(user_id=user_id).exists():
+                    messages.warning(request, f"User ID {user_id} skipped: already exists.")
+                    continue
+
+                password = generate_password()
+                customer = Customer(
+                    customer_id=row['customer_id'],
+                    name=row['name'],
+                    user_id=row['user_id'],
+                    email=row['email'],
+                    whatsapp_number=row.get('whatsapp_number', '')
+                )
+                customer.set_password(password)
+                customer.save()
+                send_credentials_email(row['email'], user_id, password)
+                messages.success(request, f"User ID {user_id} added successfully.")
+
         else:
-            customer = Customer(
-                customer_id=customer_id,
-                name=name,
-                user_id=user_id,
-                password=password,  # will be hashed in save()
-                email=email,
-                whatsapp_number=whatsapp
-            )
-            customer.save()
-            messages.success(request, f"Customer {customer_id} added successfully")
-            return redirect('admin_customers')
+            # Single customer add
+            customer_id = request.POST.get("customer_id")
+            name = request.POST.get("name")
+            user_id = request.POST.get("user_id")
+            email = request.POST.get("email")
+            whatsapp = request.POST.get("whatsapp_number")
+
+            if Customer.objects.filter(user_id=user_id).exists():
+                messages.error(request, "User ID already exists")
+            else:
+                password = generate_password()
+                customer = Customer(
+                    customer_id=customer_id,
+                    name=name,
+                    user_id=user_id,
+                    email=email,
+                    whatsapp_number=whatsapp
+                )
+                customer.set_password(password)
+                customer.save()
+                send_credentials_email(email, user_id, password)
+                messages.success(request, f"Customer {customer_id} added successfully")
+
+        return redirect('admin_customers')
 
     return render(request, "admin_customers.html", {"customers": customers})
+
 
 @admin_required
 def admin_logout(request):
@@ -436,6 +490,7 @@ def confirm_orders_excel(request):
     return redirect("admin_dashboard")
 
 # view_orders_by_container
+
 @admin_required
 def view_orders_by_container(request):
     containers = Container.objects.all()
@@ -574,20 +629,6 @@ def user_logout(request):
     messages.success(request, "User logged out successfully")
     return redirect('user_login')
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.http import HttpResponse
-from django.conf import settings
-from django.core.files import File
-from .models import Container, Order
-from .utils import decrypt_text
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image, Spacer
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
-import os
-import io
-import xlsxwriter
 
 # ----------------------------
 # List all containers for the logged-in user

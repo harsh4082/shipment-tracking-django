@@ -4,35 +4,64 @@
 {% block content %}
 <h2>Manage Customers</h2>
 
-<form method="post" class="mt-3">
-    {% csrf_token %}
-    <div class="row g-2">
-        <div class="col-md-2">
-            <input type="text" name="customer_id" class="form-control" placeholder="Customer ID" required>
-        </div>
-        <div class="col-md-3">
-            <input type="text" name="name" class="form-control" placeholder="Name" required>
-        </div>
-        <div class="col-md-2">
-            <input type="text" name="user_id" class="form-control" placeholder="User ID" required>
-        </div>
-        <div class="col-md-2">
-            <input type="password" name="password" class="form-control" placeholder="Password" required>
-        </div>
-        <div class="col-md-3">
-            <input type="email" name="email" class="form-control" placeholder="Email" required>
-        </div>
-    </div>
+<!-- Display messages -->
+{% if messages %}
+  <div class="mt-2">
+    {% for message in messages %}
+      <div class="alert 
+          {% if message.tags == 'success' %}alert-success{% endif %}
+          {% if message.tags == 'warning' %}alert-warning{% endif %}
+          {% if message.tags == 'error' %}alert-danger{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
 
-    <div class="row g-2 mt-2">
-        <div class="col-md-3">
-            <input type="text" name="whatsapp_number" class="form-control" placeholder="WhatsApp Number">
+<!-- Tabs -->
+<ul class="nav nav-tabs" id="customerTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single" type="button" role="tab">Single Customer</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="multiple-tab" data-bs-toggle="tab" data-bs-target="#multiple" type="button" role="tab">Upload XLS</button>
+  </li>
+</ul>
+
+<div class="tab-content mt-3">
+  <!-- Single Customer Tab -->
+  <div class="tab-pane fade show active" id="single" role="tabpanel">
+    <form method="post" class="mt-3">
+      {% csrf_token %}
+      <div class="row g-2">
+        <div class="col-md-2"><input type="text" name="customer_id" class="form-control" placeholder="Customer ID" required></div>
+        <div class="col-md-3"><input type="text" name="name" class="form-control" placeholder="Name" required></div>
+        <div class="col-md-2"><input type="text" name="user_id" class="form-control" placeholder="User ID" required></div>
+        <div class="col-md-3"><input type="email" name="email" class="form-control" placeholder="Email" required></div>
+        <div class="col-md-2"><input type="text" name="whatsapp_number" class="form-control" placeholder="WhatsApp Number"></div>
+      </div>
+      <div class="row g-2 mt-2">
+        <div class="col-md-2"><button type="submit" class="btn btn-primary">Add Customer</button></div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Multiple Customer Tab -->
+  <div class="tab-pane fade" id="multiple" role="tabpanel">
+    <form method="post" enctype="multipart/form-data" class="mt-3">
+      {% csrf_token %}
+      <div class="row g-2">
+        <div class="col-md-4">
+          <input type="file" name="upload_xls" class="form-control" accept=".xls,.xlsx" required>
         </div>
-        <div class="col-md-3">
-            <button type="submit" class="btn btn-primary">Add Customer</button>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-success">Upload XLS</button>
         </div>
-    </div>
-</form>
+      </div>
+      <p class="mt-2">Excel columns required: <strong>customer_id | name | user_id | email | whatsapp_number</strong></p>
+    </form>
+  </div>
+</div>
 
 <hr>
 
@@ -62,4 +91,3 @@
     </tbody>
 </table>
 {% endblock %}
-        

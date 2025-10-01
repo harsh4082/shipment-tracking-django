@@ -33,6 +33,15 @@ DEBUG = True
 # ALLOWED_HOSTS = ['127.0.0.1', 'localhost']   # make sure this includes your host
 ALLOWED_HOSTS = []   # make sure this includes your host
 
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'harshsolanki2804@gmail.com'
+EMAIL_HOST_PASSWORD = 'esju kfwq hkve vbzp'  # use your Gmail app password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Application definition
