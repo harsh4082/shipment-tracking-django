@@ -48,7 +48,11 @@
                                 <td>
                                     {% if key == "Pictures" and value %}
                                         {% for img_path in value %}
-                                            <img src="{{ MEDIA_URL }}{{ img_path }}" class="img-thumbnail me-1 zoom-on-hover" width="80" height="80">
+                                            <img 
+                                                src="{{ MEDIA_URL }}{{ img_path|urlencode }}" 
+                                                class="img-thumbnail me-1 zoom-on-hover" 
+                                                width="80" height="80" 
+                                                alt="Order image">
                                         {% endfor %}
                                     {% else %}
                                         {{ value }}

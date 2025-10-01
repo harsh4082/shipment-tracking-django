@@ -29,9 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-bqqdo((64zj8_*p2)r%t=1&%15!z+(bnk$=g0cuad&s($@ue$m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']   # make sure this includes your host
-# ALLOWED_HOSTS = []   # make sure this includes your host
+DEBUG = True
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost']   # make sure this includes your host
+ALLOWED_HOSTS = []   # make sure this includes your host
 
 
 
@@ -39,11 +39,11 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']   # make sure this includes your host
 
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'rest_framework',
     'shipment_app',
 
