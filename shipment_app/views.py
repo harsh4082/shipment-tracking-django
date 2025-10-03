@@ -15,6 +15,7 @@ import openpyxl
 
 from .models import AdminTable, Customer, Container, Order
 from .utils import generate_password, send_credentials_email, encrypt_text, decrypt_text
+from django.db.models import Sum
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -97,7 +98,15 @@ def delete_container(request, container_id):
     related_orders = Order.objects.filter(container=container)
     order_count = related_orders.count()
 
-    # Delete related orders first
+    # Delete images from MEDIA_ROOT
+    for order in related_orders:
+        if order.pictures and os.path.isfile(order.pictures.path):
+            try:
+                os.remove(order.pictures.path)
+            except Exception as e:
+                print(f"Error deleting image {order.pictures.path}: {e}")
+
+    # Delete related orders
     related_orders.delete()
 
     # Now delete the container
@@ -105,11 +114,9 @@ def delete_container(request, container_id):
 
     messages.success(
         request,
-        f"Container {container_id} and its {order_count} related order(s) deleted successfully."
+        f"Container {container_id} and its {order_count} related order(s) deleted successfully, including images."
     )
     return redirect('admin_containers')
-
-
 # from .decorators import admin_required
 
 @admin_required
@@ -237,31 +244,42 @@ def add_order(request):
     return render(request, "add_order.html", {"customers": customers, "containers": containers})
 
 
+import os
+import re
+import openpyxl
+from django.core.files import File
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.conf import settings
+
+from .models import Container, Customer, Order
+# from .decorators import admin_required
+
+
 @admin_required
 def upload_orders_excel(request):
     containers = Container.objects.all()
     preview_data = None
     selected_container = None
+    temp_images = set()
 
     if request.method == "POST" and request.FILES.get("excel_file"):
         selected_container = request.POST.get("container")
         excel_file = request.FILES["excel_file"]
 
-        # Save uploaded Excel
+        # Save uploaded Excel temporarily
         fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "excel_uploads"))
         filename = fs.save(excel_file.name, excel_file)
         file_path = fs.path(filename)
 
-        wb = None
         try:
             wb = openpyxl.load_workbook(file_path, data_only=True)
             sheet = wb.active
 
-            # Save merged ranges before unmerging
-            original_merged_ranges = list(sheet.merged_cells.ranges)
-
-            # Expand merged cells
-            for merged_range in original_merged_ranges:
+            # Save merged ranges
+            merged_ranges = list(sheet.merged_cells.ranges)
+            for merged_range in merged_ranges:
                 min_col, min_row, max_col, max_row = merged_range.bounds
                 first_val = sheet.cell(row=min_row, column=min_col).value
                 sheet.unmerge_cells(range_string=str(merged_range))
@@ -269,7 +287,7 @@ def upload_orders_excel(request):
                     for c in range(min_col, max_col + 1):
                         sheet.cell(row=r, column=c, value=first_val)
 
-            # Extract images into media/order_pics
+            # Extract images to media/order_pics
             images_dir = os.path.join(settings.MEDIA_ROOT, "order_pics")
             os.makedirs(images_dir, exist_ok=True)
             images_map = {}
@@ -277,29 +295,28 @@ def upload_orders_excel(request):
             for img in sheet._images:
                 try:
                     img_bytes = img._data()
-                    img_filename = f"img_{len(images_map)+1}.png"
+                    img_filename = f"img_{len(temp_images)+1}.png"
                     img_path = os.path.join(images_dir, img_filename)
                     with open(img_path, "wb") as f:
                         f.write(img_bytes)
 
-                    # --- DEBUG PRINT ---
-                    # print(f"[UPLOAD DEBUG] Saved image to: {img_path}")
-                    # print(f"[UPLOAD DEBUG] Access URL: {settings.MEDIA_URL}order_pics/{img_filename}")
-
+                    # Anchor row/col
                     anchor_row = img.anchor._from.row + 1
                     anchor_col = img.anchor._from.col + 1
                     assigned = False
 
-                    for merged_range in original_merged_ranges:
+                    for merged_range in merged_ranges:
                         min_col, min_row, max_col, max_row = merged_range.bounds
                         if min_row <= anchor_row <= max_row and min_col <= anchor_col <= max_col:
                             for r in range(min_row, max_row + 1):
                                 images_map.setdefault(r, set()).add(f"order_pics/{img_filename}")
+                                temp_images.add(f"order_pics/{img_filename}")
                             assigned = True
                             break
 
                     if not assigned:
                         images_map.setdefault(anchor_row, set()).add(f"order_pics/{img_filename}")
+                        temp_images.add(f"order_pics/{img_filename}")
 
                 except Exception as e:
                     print("Image extraction failed:", e)
@@ -332,7 +349,6 @@ def upload_orders_excel(request):
             # Group images by (Customer, Shipping Mark)
             preview_data = []
             customer_shipping_images = {}
-
             for row_dict in raw_rows:
                 customer = str(row_dict.get("CUSTOMER")).strip() if row_dict.get("CUSTOMER") else None
                 shipping_mark = str(row_dict.get("Shipping Mark")).strip() if row_dict.get("Shipping Mark") else None
@@ -352,10 +368,10 @@ def upload_orders_excel(request):
                 if ("Pictures" not in row_dict or not row_dict.get("Pictures")) and key in customer_shipping_images:
                     row_dict["Pictures"] = list(customer_shipping_images[key])
 
-            # Save preview in session
+            # Save preview and temp images in session (convert sets to lists!)
             request.session["excel_preview"] = preview_data
             request.session["selected_container"] = selected_container
-            request.session["uploaded_excel_path"] = file_path
+            request.session["temp_order_images"] = list(temp_images)
 
         except Exception as e:
             messages.error(request, f"Error processing Excel file: {e}")
@@ -382,7 +398,7 @@ def upload_orders_excel(request):
 def confirm_orders_excel(request):
     preview_data = request.session.get("excel_preview")
     selected_container = request.session.get("selected_container")
-    excel_file_path = request.session.get("uploaded_excel_path")
+    temp_images = set(request.session.get("temp_order_images", []))  # Convert back to set
 
     if not preview_data or not selected_container:
         messages.error(request, "No preview data found. Please upload again.")
@@ -421,38 +437,34 @@ def confirm_orders_excel(request):
                 supplier=row.get("Supplier") or None,
             )
 
-            # Handle multiple images
+            # Attach images
             if row.get("Pictures"):
                 for img_relative_path in row["Pictures"]:
                     img_path = os.path.join(settings.MEDIA_ROOT, img_relative_path)
-                    img_url = settings.MEDIA_URL + img_relative_path
-                    # print(f"[CONFIRM DEBUG] Full path: {img_path}")
-                    # print(f"[CONFIRM DEBUG] URL for browser: {img_url}")
-
-                    if os.path.exists(img_path):
-                        if not order.pictures:
-                            order.pictures.save(
-                                os.path.basename(img_path),
-                                File(open(img_path, "rb")),
-                                save=False
-                            )
+                    if os.path.exists(img_path) and not order.pictures:
+                        order.pictures.save(
+                            os.path.basename(img_path),
+                            File(open(img_path, "rb")),
+                            save=False
+                        )
 
             order.save()
 
         except Exception as e:
             messages.warning(request, f"Error saving order for Customer {customer_id}: {e}")
 
-    # Delete uploaded Excel file after processing
-    if excel_file_path and os.path.exists(excel_file_path):
-        try:
-            os.remove(excel_file_path)
-        except Exception as e:
-            print(f"Could not delete uploaded Excel file: {e}")
+    # Delete temporary images after saving
+    for img_relative_path in temp_images:
+        img_path = os.path.join(settings.MEDIA_ROOT, img_relative_path)
+        if os.path.exists(img_path):
+            try:
+                os.remove(img_path)
+            except Exception as e:
+                print(f"Could not delete temporary image {img_path}: {e}")
 
     # Clear session
-    request.session.pop("excel_preview", None)
-    request.session.pop("selected_container", None)
-    request.session.pop("uploaded_excel_path", None)
+    for key in ["excel_preview", "selected_container", "temp_order_images"]:
+        request.session.pop(key, None)
 
     if missing_customers:
         messages.warning(request, f"The following customer IDs were not found in database: {', '.join(missing_customers)}")
@@ -541,6 +553,39 @@ def view_orders_by_customer(request):
 
 
 
+
+# views.py
+
+# from django.contrib.admin.views.decorators import staff_member_required
+# views.py
+from django.shortcuts import render
+from django.contrib import messages
+from .models import OrderFieldVisibility
+# from .decorators import admin_required
+
+@admin_required
+def manage_field_visibility(request):
+    # Ensure all fields exist in DB
+    fields_in_db = {f.field_name: f for f in OrderFieldVisibility.objects.all()}
+    all_fields = []
+
+    for field_name, field_label in OrderFieldVisibility.FIELD_CHOICES:
+        if field_name in fields_in_db:
+            field_obj = fields_in_db[field_name]
+        else:
+            # create default record if not exists
+            field_obj = OrderFieldVisibility.objects.create(field_name=field_name, is_visible=True)
+        all_fields.append(field_obj)
+
+    if request.method == "POST":
+        for field in all_fields:
+            field.is_visible = request.POST.get(field.field_name) == "on"
+            field.save()
+        messages.success(request, "Field visibility updated successfully.")
+
+    return render(request, "manage_field_visibility.html", {"fields": all_fields})
+
+
 # ----------------------------
 # Customer Views
 # ----------------------------
@@ -606,6 +651,10 @@ def user_logout(request):
 # ----------------------------
 # from .utils import encrypt_text  # assuming you have this utility
 
+def get_visible_fields():
+    return {fv.field_name for fv in OrderFieldVisibility.objects.filter(is_visible=True)}
+
+
 @customer_required
 def user_containers(request):
     customer_id = request.session.get('customer_id')
@@ -633,146 +682,148 @@ def user_container_orders(request, enc_container_id):
     customer_id = request.session.get('customer_id')
     container_id = decrypt_text(enc_container_id)
     container = get_object_or_404(Container, container_id=container_id)
+
     orders = Order.objects.filter(container=container, customer_id=customer_id)
+    total_qty_sum = orders.aggregate(total=Sum('total_qty'))['total'] or 0
+
+    visible_fields = get_visible_fields()
 
     return render(request, "user_container_orders.html", {
         "container": container,
         "orders": orders,
-        "enc_container_id": enc_container_id  # for PDF/Excel links
+        "total_qty_sum": total_qty_sum,
+        "enc_container_id": enc_container_id,
+        "visible_fields": visible_fields,
     })
-
 
 # ----------------------------
 # Export orders to PDF (with images)
 # ----------------------------
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+import io
+import os
+from django.conf import settings
 
 @customer_required
 def export_orders_pdf(request, enc_container_id):
-    customer_id = request.session.get('customer_id')
+    customer_id = request.session.get("customer_id")
     container_id = decrypt_text(enc_container_id)
     container = get_object_or_404(Container, container_id=container_id)
     orders = Order.objects.filter(container=container, customer_id=customer_id)
 
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
-    elements = []
-
-    styles = getSampleStyleSheet()
-    wrap_style = ParagraphStyle(
-        name='wrap',
-        fontName='Helvetica',
-        fontSize=10,
-        leading=12,
-        alignment=TA_LEFT,
-        wordWrap='CJK'  # ensures long words wrap properly
+    visible_fields = set(
+        OrderFieldVisibility.objects.filter(is_visible=True)
+        .values_list("field_name", flat=True)
     )
 
-    # Title
-    title = Paragraph(f"Orders for Container {container.container_id}", styles['Title'])
-    elements.append(title)
-    elements.append(Spacer(1, 12))
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="orders_{container.container_name}.pdf"'
 
-    # Table headers
-    data = [["Shipping Mark", "Description", "Item No", "Qty", "Supplier", "Picture"]]
+    doc = SimpleDocTemplate(response, pagesize=landscape(A4))
+    elements = []
+    styles = getSampleStyleSheet()
 
-    for o in orders:
-        shipping_mark = Paragraph(o.shipping_mark or "", wrap_style)
-        description = Paragraph(o.description or "", wrap_style)
-        item_no = Paragraph(o.item_no_spec or "", wrap_style)
-        qty = Paragraph(f"{o.total_qty or ''} {o.unit or ''}", wrap_style)
-        supplier = Paragraph(o.supplier or "", wrap_style)
+    # Header labels
+    field_labels = dict(OrderFieldVisibility.FIELD_CHOICES)
+    headers = ["#"] + [field_labels[f] for f in field_labels if f in visible_fields]
+    data = [headers]
 
-        # Image or "No Image"
-        if o.pictures:
-            img_path = os.path.join(settings.MEDIA_ROOT, o.pictures.name)
-            if os.path.exists(img_path):
-                img = Image(img_path, width=60, height=60)  # scaled image
+    for idx, order in enumerate(orders, start=1):
+        row = [str(idx)]
+        for field in field_labels:
+            if field not in visible_fields:
+                continue
+            value = getattr(order, field)
+            
+            # Handle image
+            if field == "pictures" and value:
+                img_path = os.path.join(settings.MEDIA_ROOT, value.name)
+                if os.path.exists(img_path):
+                    # Resize image to fit cell
+                    img = Image(img_path, width=60, height=60)  # adjust size
+                    row.append(img)
+                else:
+                    row.append("-")
             else:
-                img = Paragraph("No Image", wrap_style)
-        else:
-            img = Paragraph("No Image", wrap_style)
+                row.append(str(value) if value else "-")
+        data.append(row)
 
-        data.append([shipping_mark, description, item_no, qty, supplier, img])
-
-    # Table with wider columns and top alignment
-    table = Table(data, colWidths=[80, 200, 80, 50, 100, 80])
+    table = Table(data, repeatRows=1)
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.grey),
-        ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
-        ('ALIGN',(0,0),(-1,0),'CENTER'),
-        ('VALIGN',(0,0),(-1,-1),'TOP'),
-        ('ALIGN',(0,1),(-2,-1),'LEFT'),  # left-align text except image
-        ('ALIGN',(-1,1),(-1,-1),'CENTER'),  # center images
-        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
-        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.lightgrey, colors.whitesmoke])
+        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
     ]))
 
+    elements.append(Paragraph(f"Orders in {container.container_name}", styles["Heading2"]))
     elements.append(table)
     doc.build(elements)
 
-    buffer.seek(0)
-    response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="orders_{container.container_id}.pdf"'
     return response
 
 
+import openpyxl
+from openpyxl.utils import get_column_letter
+from django.http import HttpResponse
+from .models import Container, Order, OrderFieldVisibility
+
 @customer_required
 def export_orders_excel(request, enc_container_id):
-    customer_id = request.session.get('customer_id')
+    customer_id = request.session.get("customer_id")
     container_id = decrypt_text(enc_container_id)
     container = get_object_or_404(Container, container_id=container_id)
     orders = Order.objects.filter(container=container, customer_id=customer_id)
 
-    output = io.BytesIO()
-    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-    worksheet = workbook.add_worksheet("Orders")
+    # Only fields marked visible
+    visible_fields = set(
+        OrderFieldVisibility.objects.filter(is_visible=True)
+        .values_list("field_name", flat=True)
+    )
 
-    # Set column widths for better display
-    worksheet.set_column('A:A', 20)  # Shipping Mark
-    worksheet.set_column('B:B', 40)  # Description
-    worksheet.set_column('C:C', 20)  # Item No
-    worksheet.set_column('D:D', 10)  # Qty
-    worksheet.set_column('E:E', 25)  # Supplier
-    worksheet.set_column('F:F', 15)  # Picture
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Orders"
 
-    # Headers
-    headers = ["Shipping Mark", "Description", "Item No", "Qty", "Supplier", "Picture"]
-    header_format = workbook.add_format({'bold': True, 'bg_color': '#4F81BD', 'font_color': 'white', 'align': 'center'})
-    for col, header in enumerate(headers):
-        worksheet.write(0, col, header, header_format)
+    field_labels = dict(OrderFieldVisibility.FIELD_CHOICES)
+    headers = ["#"] + [field_labels[f] for f in field_labels if f in visible_fields]
+    ws.append(headers)
 
-    # Rows
-    row_idx = 1
-    for order in orders:
-        worksheet.write(row_idx, 0, order.shipping_mark or "")
-        worksheet.write(row_idx, 1, order.description or "")
-        worksheet.write(row_idx, 2, order.item_no_spec or "")
-        worksheet.write(row_idx, 3, f"{order.total_qty or ''} {order.unit or ''}")
-        worksheet.write(row_idx, 4, order.supplier or "")
-
-        # Insert image or "No Image"
-        if order.pictures:
-            img_path = os.path.join(settings.MEDIA_ROOT, order.pictures.name)
-            if os.path.exists(img_path):
-                # Insert scaled image
-                worksheet.insert_image(row_idx, 5, img_path, {'x_scale': 0.5, 'y_scale': 0.5, 'object_position': 1})
+    # Data rows
+    for idx, order in enumerate(orders, start=1):
+        row = [idx]
+        for field in field_labels:
+            if field not in visible_fields:
+                continue
+            value = getattr(order, field)
+            if field == "pictures" and value:
+                row.append(value.url)
             else:
-                worksheet.write(row_idx, 5, "No Image")
-        else:
-            worksheet.write(row_idx, 5, "No Image")
+                row.append(str(value) if value else "")
+        ws.append(row)
 
-        row_idx += 1
-
-    workbook.close()
-    output.seek(0)
+    # Auto column width
+    for col in ws.columns:
+        max_length = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            try:
+                if cell.value and len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        ws.column_dimensions[col_letter].width = max_length + 3
 
     response = HttpResponse(
-        output.read(),
+        content=openpyxl.writer.excel.save_virtual_workbook(wb),
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response['Content-Disposition'] = f'attachment; filename="orders_{container.container_id}.xlsx"'
+    response["Content-Disposition"] = f'attachment; filename="orders_{container.container_name}.xlsx"'
     return response
-
 
 
 # ----------------------------

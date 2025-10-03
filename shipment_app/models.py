@@ -7,18 +7,37 @@ from django.utils import timezone
 # -----------------------------
 # 1) Container Table
 # -----------------------------
+# import string
+# from datetime import date
+# from django.db import models
+
 class Container(models.Model):
     container_id = models.CharField(max_length=50, unique=True, primary_key=True)
     container_no = models.CharField(max_length=100)
     container_name = models.CharField(max_length=100)
 
     def save(self, *args, **kwargs):
-        # Auto-generate container_id if not provided
         if not self.container_id:
-            today = date.today().strftime("%d%b%Y")  # e.g., 28Sep2025
-            existing_count = Container.objects.filter(container_id__startswith=today).count()
-            letter = string.ascii_uppercase[existing_count]  # A, B, C...
-            self.container_id = f"{today}{letter}"
+            today = date.today().strftime("%d%b%Y")  # e.g., 01Oct2025
+
+            # Get the last container for today (highest letter at the end)
+            last_container = (
+                Container.objects.filter(container_id__startswith=today)
+                .order_by("-container_id")
+                .first()
+            )
+
+            if last_container:
+                # Take last letter and increment
+                last_letter = last_container.container_id[-1]
+                if last_letter == "Z":
+                    raise ValueError("Maximum containers reached for today (A-Z)")
+                next_letter = chr(ord(last_letter) + 1)
+            else:
+                next_letter = "A"
+
+            self.container_id = f"{today}{next_letter}"
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -105,3 +124,32 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order for {self.customer.name} - {self.shipping_mark or 'N/A'}"
+
+# models.py
+
+# models.py
+
+class OrderFieldVisibility(models.Model):
+    FIELD_CHOICES = [
+        ("shipping_mark", "Shipping Mark"),
+        ("description", "Description"),
+        ("item_no_spec", "Item No/Spec"),
+        ("material", "Material"),
+        ("ctns", "CTNs"),
+        ("qty_per_ctn", "Qty/CTN"),
+        ("total_qty", "Total Qty"),
+        ("unit", "Unit"),
+        ("cbm_per_ctn", "CBM/CTN"),
+        ("cbm", "CBM"),
+        ("total_cbm", "Total CBM"),
+        ("wt_per_ctn", "Wt/CTN"),
+        ("total_wt", "Total Wt"),
+        ("supplier", "Supplier"),
+        ("pictures", "Picture"),
+    ]
+
+    field_name = models.CharField(max_length=50, choices=FIELD_CHOICES, unique=True)
+    is_visible = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.get_field_name_display()} - {'Visible' if self.is_visible else 'Hidden'}"

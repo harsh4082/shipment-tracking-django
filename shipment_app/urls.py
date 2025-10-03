@@ -20,6 +20,7 @@ urlpatterns = [
     # ------------------- Admin View Orders -------------------
     path('myadmin/orders/view/', views.view_orders_by_container, name='view_orders_by_container'),
     path('myadmin/orders/view-by-customer/', views.view_orders_by_customer, name='view_orders_by_customer'),
+    path("myadmin/field-visibility/", views.manage_field_visibility, name="manage_field_visibility"),
 
 
 

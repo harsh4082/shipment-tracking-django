@@ -2,10 +2,77 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<h2>Welcome Admin!</h2>
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Welcome, Admin!</h2>
 
-<div class="mt-4">
-    <a href="{% url 'admin_containers' %}" class="btn btn-success me-2">Manage Containers</a>
-    <a href="{% url 'admin_customers' %}" class="btn btn-primary">Manage Customers</a>
+    <div class="row g-4">
+
+        <!-- Manage Containers -->
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">Manage Containers</h5>
+                    <p class="card-text">Add, edit or delete containers.</p>
+                    <a href="{% url 'admin_containers' %}" class="btn btn-success mt-auto">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Customers -->
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">Manage Customers</h5>
+                    <p class="card-text">Add, edit or delete customers.</p>
+                    <a href="{% url 'admin_customers' %}" class="btn btn-primary mt-auto">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Orders -->
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">Add Orders</h5>
+                    <p class="card-text">Upload orders via Excel.</p>
+                    <a href="{% url 'upload_orders_excel' %}" class="btn btn-warning mt-auto">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Orders by Container -->
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">View Orders (Container)</h5>
+                    <p class="card-text">View all orders filtered by container.</p>
+                    <a href="{% url 'view_orders_by_container' %}" class="btn btn-info mt-auto">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Orders by Customer -->
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">View Orders (Customer)</h5>
+                    <p class="card-text">View all orders filtered by customer.</p>
+                    <a href="{% url 'view_orders_by_customer' %}" class="btn btn-secondary mt-auto">Go</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Field Visibility -->
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">Field Visibility</h5>
+                    <p class="card-text">Select which fields are visible to customers.</p>
+                    <a href="{% url 'manage_field_visibility' %}" class="btn btn-danger mt-auto">Go</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 {% endblock %}

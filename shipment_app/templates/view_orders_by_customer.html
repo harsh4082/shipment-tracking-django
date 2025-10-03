@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <h2>Orders by Container & Customer</h2>
@@ -10,7 +15,7 @@
 
             <!-- Container Dropdown -->
             <div class="col-md-3">
-                <select name="container" class="form-select" onchange="this.form.submit()">
+                <select id="containerSelect" name="container" class="form-select">
                     <option value="">Select Container</option>
                     {% for container in containers %}
                         <option value="{{ container.signed }}"
@@ -24,7 +29,7 @@
             <!-- Customer Dropdown -->
             {% if customers %}
             <div class="col-md-3">
-                <select name="customer" class="form-select" onchange="this.form.submit()">
+                <select id="customerSelect" name="customer" class="form-select">
                     <option value="">Select Customer</option>
                     {% for customer in customers %}
                         <option value="{{ customer.signed }}"
@@ -35,6 +40,10 @@
                 </select>
             </div>
             {% endif %}
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
 
         </div>
     </form>
@@ -96,4 +105,32 @@
         <p class="text-muted">No orders found for this container and customer.</p>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Apply Select2 to container and customer dropdowns
+    $('#containerSelect').select2({
+        placeholder: "Select or search container",
+        allowClear: true,
+        width: '100%'
+    });
+    $('#customerSelect').select2({
+        placeholder: "Select or search customer",
+        allowClear: true,
+        width: '100%'
+    });
+
+    // Submit form when selection changes
+    $('#containerSelect, #customerSelect').on('change', function() {
+        $(this).closest('form').submit();
+    });
+});
+</script>
 {% endblock %}
