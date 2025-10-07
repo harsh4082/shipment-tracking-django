@@ -1,0 +1,158 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Ship Tracking Dashboard - View Customer{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Custom styles to make Select2 match the page's theme */
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #d1d5db; border-radius: 8px; height: auto; padding: 10px 14px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 100%; top: 50%; transform: translateY(-50%); right: 10px;
+    }
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        padding-left: 0; color: #4b5563;
+    }
+    .select2-dropdown {
+        border: 1px solid #d1d5db; border-radius: 8px;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db; border-radius: 6px;
+    }
+    .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+        background-color: #1193d4; color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="flex-1 w-full lg:w-auto lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+    <div class="flex items-center gap-4 mb-6 sm:mb-8">
+        <button id="open-sidebar" class="lg:hidden text-gray-900 dark:text-white">
+            <span class="material-symbols-outlined text-3xl">menu</span>
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">View Customer</h1>
+    </div>
+
+    <div class="card-custom">
+        <form method="get" class="mb-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-6 col-lg-5">
+                    <label for="customerSelect" class="form-label">Search for a Customer</label>
+                    <select id="customerSelect" name="customer" class="form-control">
+                        <option value="">Select by Customer ID or Name</option>
+                        {% for customer in all_customers %}
+                            <option value="{{ customer.id }}" {% if customer.id == selected_customer.id %}selected{% endif %}>
+                                {{ customer.name }} ({{ customer.customer_id }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 col-lg-2">
+                    <button type="submit" class="btn-primary-custom w-100">View Profile</button>
+                </div>
+            </div>
+        </form>
+
+        {% if selected_customer %}
+        <div id="customerDetails">
+            <div class="customer-profile">
+                <div class="customer-avatar">{{ selected_customer.get_initials }}</div>
+                <h2 class="customer-name">{{ selected_customer.name }}</h2>
+                <p class="customer-id">Customer ID: {{ selected_customer.customer_id }}</p>
+                <div class="action-buttons">
+                    <a href="mailto:{{ selected_customer.email }}" class="btn btn-outline-secondary btn-sm">
+                        <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">mail</span>
+                        Send Email
+                    </a>
+                    <a href="https://wa.me/{{ selected_customer.whatsapp_number }}" target="_blank" class="btn btn-outline-success btn-sm">
+                         <span class="material-symbols-outlined" style="font-size: 18px; vertical-align: middle;">chat</span>
+                         WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <h3 class="section-title">Contact Information</h3>
+            <div class="info-grid mb-4">
+                <div class="info-item">
+                    <div class="info-label">User ID</div>
+                    <div class="info-value">{{ selected_customer.user_id }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value">{{ selected_customer.email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">WhatsApp Number</div>
+                    <div class="info-value">{{ selected_customer.whatsapp_number|default:"N/A" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Member Since</div>
+                    <div class="info-value">{{ selected_customer.date_joined|date:"F Y" }}</div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="stats-card">
+                        <div class="stats-value">{{ customer_stats.total_orders }}</div>
+                        <div class="stats-label">Total Orders</div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="stats-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <div class="stats-value">{{ customer_stats.active_shipments }}</div>
+                        <div class="stats-label">Active Shipments</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                        <div class="stats-value">${{ customer_stats.total_value|floatformat:2 }}</div>
+                        <div class="stats-label">Total Value</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Recent Order History</h3>
+            <div id="orderHistory">
+                {% for order in recent_orders %}
+                <div class="order-history-item">
+                    <div class="order-id">Order #{{ order.id }}</div>
+                    <div class="order-route">{{ order.container.origin|default:"N/A" }} → {{ order.container.destination|default:"N/A" }}</div>
+                    <div class="order-date">Container: {{ order.container.container_id|default:"N/A" }} | Status: {{ order.get_status_display }} | ETA: {{ order.container.eta|date:"M d, Y" }}</div>
+                </div>
+                {% empty %}
+                <p class="text-center text-muted py-3">No recent orders found for this customer.</p>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-4">
+                 <a href="{% url 'view_order' %}?customer={{ selected_customer.id }}" class="btn btn-outline-primary">View All Orders</a>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="text-center text-muted py-5" id="searchPrompt">
+            <span class="material-symbols-outlined" style="font-size: 64px;">person_search</span>
+            <p class="mt-3">Search for a customer to view their details</p>
+        </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#customerSelect').select2({
+        placeholder: "Search by Customer ID or Name",
+        allowClear: true
+    });
+});
+</script>
+{% endblock %}

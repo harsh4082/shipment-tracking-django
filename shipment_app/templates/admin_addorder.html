@@ -1,0 +1,110 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Ship Tracking Dashboard - Add Order{% endblock %}
+
+{% block content %}
+<main class="flex-1 w-full lg:w-auto lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+    <div class="flex items-center gap-4 mb-6 sm:mb-8">
+        <button id="open-sidebar" class="lg:hidden text-gray-900 dark:text-white">
+            <span class="material-symbols-outlined text-3xl">menu</span>
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Add Order from Excel</h1>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-custom">
+            <h2 class="section-title">Upload Order File</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="container-select">Select Container</label>
+                    <select class="form-select" id="container-select" name="container" required>
+                        <option value="">-- Select Container --</option>
+                        {% for container in containers %}
+                            <option value="{{ container.container_id }}" {% if container.container_id == selected_container %}selected{% endif %}>
+                                {{ container.container_id }} - {{ container.container_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="excel-file-upload">Upload Excel File</label>
+                    <input type="file" class="form-control" id="excel-file-upload" name="excel_file" required>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-primary-custom">Upload & Preview</button>
+            </div>
+        </div>
+    </form>
+
+    {% if preview_data %}
+    <div class="card-custom mt-4">
+        <h2 class="section-title">Preview Data</h2>
+        <form method="POST" action="{% url 'confirm_orders_excel' %}">
+            {% csrf_token %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            {% for header in preview_data.0.keys %}
+                            <th scope="col" class="px-6 py-3 sortable">{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview_data %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            {% for key, value in row.items %}
+                            <td class="px-6 py-4">
+                                {% if key == "Pictures" and value %}
+                                    {% for img_path in value %}
+                                        <img src="{{ MEDIA_URL }}{{ img_path|urlencode }}" class="img-thumbnail me-1 zoom-on-hover" width="60" height="60" alt="Order image">
+                                    {% endfor %}
+                                {% else %}
+                                    {{ value }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-primary-custom" style="background-color: #16a34a; background-color:#15803d">Confirm Import</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    .zoom-on-hover { transition: transform 0.2s; cursor: pointer; }
+    .zoom-on-hover:hover { transform: scale(2.5); z-index: 10; position: relative; }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { background-color: #e5e7eb; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+    const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+        v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+    )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+
+    document.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', (() => {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        Array.from(tbody.querySelectorAll('tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+            .forEach(tr => tbody.appendChild(tr) );
+    })));
+});
+</script>
+{% endblock %}

@@ -43,6 +43,131 @@ def customer_required(view_func):
         return view_func(request, *args, **kwargs)
     return wrapper
 
+
+# ----------------------------
+# NEW START
+# ----------------------------
+
+
+def manage_customer_view(request):
+    # Your existing view logic for handling forms and getting customers...
+    customers = ... # Query your customers
+    
+    context = {
+        'customers': customers,
+        'active_page': 'customers'  # This is the key for the sidebar
+    }
+    return render(request, 'manage_customer.html', context)
+
+def manage_container_view(request):
+    # Your existing view logic for handling forms and getting containers...
+    containers = ... # Query your containers
+
+    context = {
+        'containers': containers,
+        'active_page': 'containers' # This is the key for the sidebar
+    }
+    return render(request, 'manage_container.html', context)
+
+
+def dashboard_view(request):
+    context = {
+        'active_page': 'dashboard' 
+    }
+    return render(request, 'dashboard.html', context)
+
+
+def add_order_view(request):
+    # Your logic to handle file upload, read excel, generate preview_data
+
+    containers = Container.objects.all() # Fetch all containers
+    preview_data = request.session.get('preview_data', None) # Get preview data if it exists
+
+    context = {
+        'active_page': 'add_order', # For highlighting the sidebar link
+        'containers': containers,
+        'selected_container': request.POST.get('container', None), # Keep dropdown selected
+        'preview_data': preview_data
+    }
+    return render(request, 'add_order.html', context)
+
+def view_order_view(request):
+    containers = Container.objects.all()
+    selected_container_id = request.GET.get('container', None)
+    orders = None
+
+    if selected_container_id:
+        orders = Order.objects.filter(container__container_id=selected_container_id)
+
+    context = {
+        'active_page': 'view_order', # For the sidebar
+        'containers': containers,
+        'selected_container_id': selected_container_id,
+        'orders': orders
+    }
+    return render(request, 'view_order.html', context)
+
+def view_customer_view(request):
+    all_customers = Customer.objects.all()
+    selected_customer = None
+    customer_stats = None
+    recent_orders = None
+
+    customer_id = request.GET.get('customer')
+    if customer_id:
+        try:
+            selected_customer = Customer.objects.get(id=customer_id)
+            
+            # Calculate stats
+            orders = Order.objects.filter(customer=selected_customer)
+            customer_stats = {
+                'total_orders': orders.count(),
+                'active_shipments': orders.filter(status__in=['in_transit', 'at_port']).count(),
+                'total_value': orders.aggregate(Sum('value'))['value__sum'] or 0,
+            }
+
+            # Fetch recent orders
+            recent_orders = orders.order_by('-order_date')[:5] # Get latest 5 orders
+
+        except Customer.DoesNotExist:
+            # Handle case where customer is not found
+            pass
+
+    context = {
+        'active_page': 'view_customer',
+        'all_customers': all_customers,
+        'selected_customer': selected_customer,
+        'customer_stats': customer_stats,
+        'recent_orders': recent_orders,
+    }
+    return render(request, 'view_customer.html', context)
+
+
+
+def field_visibility_view(request):
+    if request.method == 'POST':
+        for field in FieldVisibility.objects.all():
+            # The value will be 'on' if checked, None if not.
+            is_visible = request.POST.get(field.field_name) == 'on'
+            if field.is_visible != is_visible:
+                field.is_visible = is_visible
+                field.save()
+        messages.success(request, 'Visibility settings updated successfully.')
+        return redirect('field_visibility')
+
+    # For GET request
+    fields = FieldVisibility.objects.all().order_by('field_name')
+    context = {
+        'active_page': 'field_visibility',
+        'fields': fields
+    }
+    return render(request, 'field_visibility.html', context)
+
+# ----------------------------
+# NEW END
+# ----------------------------
+
+
 # ----------------------------
 # Home
 # ----------------------------

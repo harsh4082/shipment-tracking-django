@@ -11,6 +11,42 @@ from django.utils import timezone
 # from datetime import date
 # from django.db import models
 
+
+
+#------------------------------------
+#new
+
+
+class FieldVisibility(models.Model):
+    FIELD_CHOICES = [
+        ('shipping_mark', 'Shipping Mark'),
+        ('description', 'Description'),
+        ('item_no_spec', 'Item No./Specification'),
+        ('material', 'Material'),
+        ('pictures', 'Pictures'),
+        # ... add all other fields you want to control
+    ]
+
+    field_name = models.CharField(max_length=50, unique=True, choices=FIELD_CHOICES)
+    is_visible = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.get_field_name_display()
+
+class Customer(models.Model):
+    # ... your existing fields: customer_id, name, user_id, email, etc.
+    date_joined = models.DateTimeField(auto_now_add=True)
+
+    def get_initials(self):
+        if self.name:
+            parts = self.name.split()
+            return parts[0][0].upper() + (parts[-1][0].upper() if len(parts) > 1 else '')
+        return '?'
+    
+#NEW
+#---------------------------------------
+
+
 class Container(models.Model):
     container_id = models.CharField(max_length=50, unique=True, primary_key=True)
     container_no = models.CharField(max_length=100)

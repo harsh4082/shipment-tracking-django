@@ -1,0 +1,139 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Ship Tracking Dashboard - View Order{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Custom styles for Select2 to match the page theme */
+    .select2-container--default .select2-selection--single {
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        height: auto;
+        padding: 10px 14px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        right: 10px;
+    }
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        padding-left: 0;
+        color: #4b5563;
+    }
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+    }
+    .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+        background-color: #1193d4;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<main class="flex-1 w-full lg:w-auto lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+    <div class="flex items-center gap-4 mb-6 sm:mb-8">
+        <button id="open-sidebar" class="lg:hidden text-gray-900 dark:text-white">
+            <span class="material-symbols-outlined text-3xl">menu</span>
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">View Orders</h1>
+    </div>
+
+    <div class="card-custom">
+        <form method="get" class="mb-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-6 col-lg-5">
+                    <label for="containerSelect" class="form-label">Select Container to View Orders</label>
+                    <select id="containerSelect" name="container" class="form-control">
+                        <option value="">Search by Container ID or Name</option>
+                        {% for container in containers %}
+                            <option value="{{ container.container_id }}" {% if container.container_id == selected_container_id %}selected{% endif %}>
+                                {{ container.container_id }} - {{ container.container_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 col-lg-2">
+                    <button type="submit" class="btn-primary-custom w-100">Search</button>
+                </div>
+            </div>
+        </form>
+
+        {% if selected_container_id %}
+            {% if orders %}
+            <div class="table-responsive">
+                <table class="table" id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Shipping Mark</th>
+                            <th>Description</th>
+                            <th>Item No.</th>
+                            <th>Pictures</th>
+                            <th>Total Qty</th>
+                            <th>Total CBM</th>
+                            <th>Total Wt</th>
+                            <th>Supplier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>{{ order.customer.customer_id }}</td>
+                            <td>{{ order.shipping_mark }}</td>
+                            <td>{{ order.description }}</td>
+                            <td>{{ order.item_no_spec }}</td>
+                            <td>
+                                {% if order.pictures %}
+                                    <a href="{{ order.pictures.url }}" target="_blank">
+                                        <img src="{{ order.pictures.url }}" alt="Image" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                                    </a>
+                                {% else %}
+                                    <span style="color: #9ca3af; font-size: 12px;">No Image</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ order.total_qty }} {{ order.unit }}</td>
+                            <td>{{ order.total_cbm }}</td>
+                            <td>{{ order.total_wt }}</td>
+                            <td>{{ order.supplier }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="text-center p-5">
+                    <p class="text-gray-500 dark:text-gray-400">No orders found for container <strong>{{ selected_container_id }}</strong>.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center p-5">
+                <p class="text-gray-500 dark:text-gray-400">Please select a container to view its orders.</p>
+            </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#containerSelect').select2({
+        placeholder: "Search by Container ID or Name",
+        allowClear: true
+    });
+});
+</script>
+{% endblock %}
