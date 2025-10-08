@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'rest_framework',
     'shipment_app',
+    
+    "django_extensions",
 
 ]
 
