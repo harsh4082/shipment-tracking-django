@@ -3,6 +3,8 @@ Django==5.0.6           # Main web framework for the project
 
 # Django REST framework
 djangorestframework==3.15.2  # For building APIs
+django-extensions>=3.2
+        
 
 # Excel file handling
 openpyxl==3.1.2         # To read/write .xlsx files
