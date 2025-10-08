@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html class="" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}ShipTrack{% endblock %}</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    {% comment %} <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script> {% endcomment %}
+    {% block extra_head %}{% endblock %}
+    <!-- ✅ Tailwind (only once, inside <head>) -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#1193d4",
+          "background-light": "#f6f7f8",
+          "background-dark": "#101c22",
+        },
+        fontFamily: {
+          display: ["Inter", "sans-serif"],
+        },
+        borderRadius: {
+          DEFAULT: "0.25rem",
+          lg: "0.5rem",
+          xl: "0.75rem",
+          full: "9999px",
+        },
+      },
+    },
+  };
+</script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        body::-webkit-scrollbar {
+            width: 0px;
+        }
+        body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        .sidebar-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        @media (max-width: 1023px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+    <div class="flex min-h-screen w-full overflow-x-hidden">
+        <div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+        
+        <aside id="sidebar" class="sidebar fixed lg:fixed w-64 h-screen flex-shrink-0 bg-white dark:bg-background-dark/50 p-4 sm:p-6 flex flex-col justify-between border-r border-gray-200 dark:border-gray-800 z-50 overflow-y-auto">
+            <div>
+                <div class="flex items-center gap-3 mb-6 sm:mb-8">
+                    <svg class="h-7 w-7 sm:h-8 sm:w-8 text-primary" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.5 17a2.4 2.4 0 0 1 3 0L8 20l5.5-5.5a2.4 2.4 0 0 1 3 0L22 19.5"></path>
+                        <path d="m21.5 2.5-19 19"></path>
+                    </svg>
+                    <span class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">ShipTrack</span>
+                    <button id="close-sidebar" class="ml-auto lg:hidden text-gray-600 dark:text-gray-300">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <nav class="flex flex-col gap-2">
+                    <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'admin_dashboard' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
+                        <span class="material-symbols-outlined text-xl">dashboard</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{% url 'admin_containers' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'admin_containers' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
+                        <span class="material-symbols-outlined text-xl">directions_boat</span>
+                        <span>Containers</span>
+                    </a>
+                    <a href="{% url 'admin_customers' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'admin_customers' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
+                        <span class="material-symbols-outlined text-xl">groups</span>
+                        <span>Customers</span>
+                    </a>
+                    <a href="{% url 'upload_orders_excel' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
+                        <span class="material-symbols-outlined text-xl">add_box</span>
+                        <span>Add Order</span>
+                    </a>
+                    <a href="{% url 'view_orders_by_container' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
+                        <span class="material-symbols-outlined text-xl">find_in_page</span>
+                        <span>View Order</span>
+                    </a>
+                    <a href="{% url 'view_orders_by_customer' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
+                        <span class="material-symbols-outlined text-xl">person_search</span>
+                        <span>View Customer</span>
+                    </a>
+                    <a href="{% url 'manage_field_visibility' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
+                        <span class="material-symbols-outlined text-xl">visibility</span>
+                        <span>Select Field</span>
+                    </a>
+                </nav>
+            </div>
+            <div>
+                <a href="{% url 'admin_logout' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base" href="#">
+                    <span class="material-symbols-outlined text-xl">logout</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+        {% block content %}
+        {% endblock %}
+        </div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const openBtn = document.getElementById('open-sidebar');
+  const closeBtn = document.getElementById('close-sidebar');
+
+  function openSidebar() {
+    sidebar.classList.add('active');
+    overlay.classList.remove('hidden');
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('active');
+    overlay.classList.add('hidden');
+  }
+
+  if (openBtn) openBtn.addEventListener('click', openSidebar);
+  if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) closeSidebar();
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -20,6 +20,7 @@ urlpatterns = [
     # ------------------- Admin View Orders -------------------
     path('myadmin/orders/view/', views.view_orders_by_container, name='view_orders_by_container'),
     path('myadmin/orders/view-by-customer/', views.view_orders_by_customer, name='view_orders_by_customer'),
+    path('ajax/get-customers/', views.get_customers_by_container, name='get_customers_by_container'),
     path("myadmin/field-visibility/", views.manage_field_visibility, name="manage_field_visibility"),
 
 
@@ -44,6 +45,8 @@ urlpatterns = [
     # User Profile Update
     # -------------------
     path('user/update-profile/', views.user_update_profile, name='user_update_profile'),
+        path('forgot-password/', views.user_forgot_password, name='user_forgot_password'),
+    path('reset-password/<uidb64>/', views.user_reset_password, name='user_reset_password'),
 ]
 
 # -------------------

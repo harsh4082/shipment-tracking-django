@@ -1,93 +1,126 @@
-{% extends "base.html" %}
-{% block title %}Manage Customers{% endblock %}
+{% extends "admin_base.html" %}
+
+{% block title %}Ship Tracking Dashboard - Manage Customers{% endblock %}
 
 {% block content %}
-<h2>Manage Customers</h2>
+<main class="flex-1 w-full lg:w-auto lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+    <div class="flex items-center gap-4 mb-6 sm:mb-8">
+        <button id="open-sidebar" class="lg:hidden text-gray-900 dark:text-white">
+            <span class="material-symbols-outlined text-3xl">menu</span>
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Manage Customers</h1>
+    </div>
 
-<!-- Display messages -->
-{% if messages %}
-  <div class="mt-2">
-    {% for message in messages %}
-      <div class="alert 
-          {% if message.tags == 'success' %}alert-success{% endif %}
-          {% if message.tags == 'warning' %}alert-warning{% endif %}
-          {% if message.tags == 'error' %}alert-danger{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
-
-<!-- Tabs -->
-<ul class="nav nav-tabs" id="customerTab" role="tablist">
-  <li class="nav-item" role="presentation">
-    <button class="nav-link active" id="single-tab" data-bs-toggle="tab" data-bs-target="#single" type="button" role="tab">Single Customer</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link" id="multiple-tab" data-bs-toggle="tab" data-bs-target="#multiple" type="button" role="tab">Upload XLS</button>
-  </li>
-</ul>
-
-<div class="tab-content mt-3">
-  <!-- Single Customer Tab -->
-  <div class="tab-pane fade show active" id="single" role="tabpanel">
-    <form method="post" class="mt-3">
-      {% csrf_token %}
-      <div class="row g-2">
-        <div class="col-md-2"><input type="text" name="customer_id" class="form-control" placeholder="Customer ID" required></div>
-        <div class="col-md-3"><input type="text" name="name" class="form-control" placeholder="Name" required></div>
-        <div class="col-md-2"><input type="text" name="user_id" class="form-control" placeholder="User ID" required></div>
-        <div class="col-md-3"><input type="email" name="email" class="form-control" placeholder="Email" required></div>
-        <div class="col-md-2"><input type="text" name="whatsapp_number" class="form-control" placeholder="WhatsApp Number"></div>
-      </div>
-      <div class="row g-2 mt-2">
-        <div class="col-md-2"><button type="submit" class="btn btn-primary">Add Customer</button></div>
-      </div>
-    </form>
-  </div>
-
-  <!-- Multiple Customer Tab -->
-  <div class="tab-pane fade" id="multiple" role="tabpanel">
-    <form method="post" enctype="multipart/form-data" class="mt-3">
-      {% csrf_token %}
-      <div class="row g-2">
-        <div class="col-md-4">
-          <input type="file" name="upload_xls" class="form-control" accept=".xls,.xlsx" required>
+    {% if messages %}
+    <div class="space-y-2 mb-6">
+        {% for message in messages %}
+        <div class="p-4 rounded-lg {% if message.tags == 'success' %} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 {% endif %} {% if message.tags == 'warning' %} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 {% endif %} {% if message.tags == 'error' %} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 {% endif %}" role="alert">
+            {{ message }}
         </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-success">Upload XLS</button>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6">
+        <div class="bg-white dark:bg-background-dark/50 p-4 sm:p-6 rounded-lg shadow-sm">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Add Single Customer</h2>
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="single_customer">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="customer-id">Customer ID</label>
+                    <input class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary" name="customer_id" placeholder="Enter Customer ID" type="text" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="customer-name">Name</label>
+                    <input class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary" name="name" placeholder="Enter Name" type="text" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="user-id">User ID</label>
+                    <input class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary" name="user_id" placeholder="Enter User ID" type="text" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="email">Email</label>
+                    <input class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary" name="email" placeholder="Enter Email" type="email" required/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" for="whatsapp">WhatsApp Number</label>
+                    <input class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary" name="whatsapp_number" placeholder="Enter WhatsApp Number" type="tel"/>
+                </div>
+                <button class="w-full bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-colors" type="submit">Add Customer</button>
+            </form>
         </div>
-      </div>
-      <p class="mt-2">Excel columns required: <strong>customer_id | name | user_id | email | whatsapp_number</strong></p>
-    </form>
-  </div>
-</div>
-
-<hr>
-
-<h4 class="mt-4">Customer List</h4>
-<table class="table table-striped mt-2">
-    <thead>
-        <tr>
-            <th>Customer ID</th>
-            <th>Name</th>
-            <th>User ID</th>
-            <th>Email</th>
-            <th>WhatsApp</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for c in customers %}
-        <tr>
-            <td>{{ c.customer_id }}</td>
-            <td>{{ c.name }}</td>
-            <td>{{ c.user_id }}</td>
-            <td>{{ c.email }}</td>
-            <td>{{ c.whatsapp_number }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5" class="text-center">No customers yet</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+        <div class="bg-white dark:bg-background-dark/50 p-4 sm:p-6 rounded-lg shadow-sm">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Upload XLS</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="upload_xls">
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center">
+                    <div class="flex flex-col items-center gap-4">
+                        <span class="material-symbols-outlined text-6xl text-gray-400">upload_file</span>
+                        <div>
+                            <p class="text-gray-700 dark:text-gray-300 font-medium mb-1">Drop your XLS file here or click to browse</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Excel columns required: <strong>customer_id | name | user_id | email | whatsapp_number</strong></p>
+                        </div>
+                        <input name="upload_xls" accept=".xls,.xlsx" class="hidden" id="file-upload" type="file" required/>
+                        <label class="bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-colors cursor-pointer" for="file-upload">
+                            Select File
+                        </label>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button class="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors" type="submit">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-background-dark/50 p-4 sm:p-6 rounded-lg shadow-sm">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Customer List</h2>
+            <div class="relative w-full sm:w-64">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                <input class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Search customers..." type="text"/>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th class="px-6 py-3" scope="col">Customer ID</th>
+                        <th class="px-6 py-3" scope="col">Name</th>
+                        <th class="px-6 py-3" scope="col">User ID</th>
+                        <th class="px-6 py-3" scope="col">Email</th>
+                        <th class="px-6 py-3" scope="col">WhatsApp</th>
+                        {% comment %} <th class="px-6 py-3 text-right" scope="col">Actions</th> {% endcomment %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ customer.customer_id }}</td>
+                        <td class="px-6 py-4">{{ customer.name }}</td>
+                        <td class="px-6 py-4">{{ customer.user_id }}</td>
+                        <td class="px-6 py-4">{{ customer.email }}</td>
+                        <td class="px-6 py-4">{{ customer.whatsapp_number }}</td>
+                        <td class="px-6 py-4 text-right">
+                            {% comment %} <form action="#" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-500 hover:underline bg-transparent border-none p-0 cursor-pointer">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </form> {% endcomment %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="bg-white dark:bg-gray-800">
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                            No customers yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
 {% endblock %}

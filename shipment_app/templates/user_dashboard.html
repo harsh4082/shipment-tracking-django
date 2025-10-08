@@ -1,18 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow">
-        <div class="card-header bg-success text-white">
-            <h4>Welcome, {{ customer.name }}!</h4>
+<div class="max-w-4xl mx-auto mt-8 p-4">
+    <!-- Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-green-600 dark:bg-green-700 p-6">
+            <h2 class="text-2xl font-bold text-white">Welcome, {{ customer.name }}!</h2>
         </div>
-        <div class="card-body">
-            <p><strong>Customer ID:</strong> {{ customer.customer_id }}</p>
-            <p><strong>User ID:</strong> {{ customer.user_id }}</p>
-            <p><strong>Email:</strong> {{ customer.email }}</p>
-            <p><strong>WhatsApp:</strong> {{ customer.whatsapp_number|default:"Not provided" }}</p>
-            <a href="{% url 'user_update_password' %}" class="btn btn-warning">Update Password</a>
-            <a href="{% url 'user_logout' %}" class="btn btn-danger">Logout</a>
+
+        <!-- Body -->
+        <div class="p-6 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <span class="text-gray-500 dark:text-gray-400 font-medium">Customer ID</span>
+                    <span class="text-gray-900 dark:text-white font-semibold">{{ customer.customer_id }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-gray-500 dark:text-gray-400 font-medium">User ID</span>
+                    <span class="text-gray-900 dark:text-white font-semibold">{{ customer.user_id }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-gray-500 dark:text-gray-400 font-medium">Email</span>
+                    <span class="text-gray-900 dark:text-white font-semibold">{{ customer.email }}</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-gray-500 dark:text-gray-400 font-medium">WhatsApp</span>
+                    <span class="text-gray-900 dark:text-white font-semibold">{{ customer.whatsapp_number|default:"Not provided" }}</span>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                <a href="{% url 'user_update_password' %}" 
+                   class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-4 rounded-lg text-center transition">
+                   Update Password
+                </a>
+                <a href="{% url 'user_logout' %}" 
+                   class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg text-center transition">
+                   Logout
+                </a>
+            </div>
         </div>
     </div>
 </div>

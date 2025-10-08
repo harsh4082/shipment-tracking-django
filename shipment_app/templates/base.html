@@ -1,78 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{% block title %}Shipment Tracking System{% endblock %}</title>
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  {% block extra_head %}{% endblock %}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{% block title %}Shipment Tracking System{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-  <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="#">Shipment Tracker</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+<body class="bg-gray-100 dark:bg-gray-900">
 
-    <div class="collapse navbar-collapse" id="navmenu">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        {% if request.session.admin_id %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'admin_containers' %}">Containers</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'admin_customers' %}">Customers</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'upload_orders_excel' %}">Add Order2</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'view_orders_by_container' %}">View Order</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'view_orders_by_customer' %}">View Customer</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'manage_field_visibility' %}">Select Feild</a></li>
-        {% elif request.session.customer_id %}
-          <li class="nav-item"><a class="nav-link" href="{% url 'user_dashboard' %}">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'user_containers' %}">My Containers</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'user_update_profile' %}">Profile</a></li>
-        {% endif %}
-      </ul>
+<!-- Sidebar -->
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-white dark:bg-gray-800 w-64 flex-shrink-0 hidden lg:flex flex-col border-r border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-center h-16 border-b border-gray-200 dark:border-gray-700">
+            <span class="text-xl font-bold text-gray-900 dark:text-white">Shipment Tracker</span>
+        </div>
+        <nav class="flex-1 px-4 py-6 overflow-y-auto">
+            <ul class="space-y-2">
+                <li><a href="{% url 'user_dashboard' %}" class="flex items-center px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 {% if request.path == '/user/dashboard/' %}bg-gray-100 dark:bg-gray-700{% endif %}">Dashboard</a></li>
+                <li><a href="{% url 'user_containers' %}" class="flex items-center px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 {% if request.path == '/user/containers/' %}bg-gray-100 dark:bg-gray-700{% endif %}">My Containers</a></li>
+                <li><a href="{% url 'user_update_profile' %}" class="flex items-center px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 {% if request.path == '/user/profile/' %}bg-gray-100 dark:bg-gray-700{% endif %}">Profile</a></li>
+                <li><a href="{% url 'user_logout' %}" class="flex items-center px-3 py-2 rounded text-red-600 hover:bg-red-100 dark:hover:bg-red-700">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
 
-      <ul class="navbar-nav">
-        {% if request.session.admin_id %}
-          <li class="nav-item me-2">
-            <span class="navbar-text">Hello, {{ request.session.admin_user_id }}</span>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-outline-danger" href="{% url 'admin_logout' %}">Logout</a>
-          </li>
-        {% elif request.session.customer_id %}
-          <li class="nav-item me-2">
-            <span class="navbar-text">Hello, {{ request.session.customer_name }}</span>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-outline-danger" href="{% url 'user_logout' %}">Logout</a>
-          </li>
-        {% else %}
-          <li class="nav-item me-2"><a class="btn btn-outline-success" href="{% url 'admin_login' %}">Admin Login</a></li>
-          <li class="nav-item"><a class="btn btn-outline-primary" href="{% url 'user_login' %}">User Login</a></li>
-        {% endif %}
-      </ul>
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col overflow-auto">
+        <!-- Mobile header -->
+        <header class="lg:hidden flex items-center justify-between bg-white dark:bg-gray-800 h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+            <span class="text-xl font-bold text-gray-900 dark:text-white">Shipment Tracker</span>
+            <button id="mobile-menu-btn" class="text-gray-900 dark:text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Mobile sidebar -->
+        <div id="mobile-sidebar" class="fixed inset-0 z-50 bg-black bg-opacity-50 hidden lg:hidden">
+            <aside class="bg-white dark:bg-gray-800 w-64 h-full p-4">
+                <button id="close-mobile-menu" class="mb-4 text-gray-900 dark:text-white">
+                    Close
+                </button>
+                <nav>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'user_dashboard' %}" class="block px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a></li>
+                        <li><a href="{% url 'user_containers' %}" class="block px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">My Containers</a></li>
+                        <li><a href="{% url 'user_update_profile' %}" class="block px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700">Profile</a></li>
+                        <li><a href="{% url 'user_logout' %}" class="block px-3 py-2 rounded text-red-600 hover:bg-red-100 dark:hover:bg-red-700">Logout</a></li>
+                    </ul>
+                </nav>
+            </aside>
+        </div>
+
+        <!-- Page Content -->
+        <main class="p-4 sm:p-6 lg:p-8 overflow-x-auto">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-3 rounded shadow text-white {% if message.tags == 'error' %}bg-red-500{% elif message.tags == 'success' %}bg-green-500{% else %}bg-blue-500{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
     </div>
-  </div>
-</nav>
-
-<div class="container mt-4">
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-
-  {% block content %}{% endblock %}
 </div>
 
-<!-- Bootstrap JS bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileSidebar = document.getElementById('mobile-sidebar');
+    const closeBtn = document.getElementById('close-mobile-menu');
+
+    mobileBtn.addEventListener('click', () => mobileSidebar.classList.remove('hidden'));
+    closeBtn.addEventListener('click', () => mobileSidebar.classList.add('hidden'));
+</script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

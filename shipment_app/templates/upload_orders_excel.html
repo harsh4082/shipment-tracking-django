@@ -1,74 +1,197 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
+
+{% block title %}Ship Tracking Dashboard - Add Order{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Upload Orders from Excel</h2>
+<main class="flex-1 w-full lg:w-auto lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+    <div class="dashboard-header">
+    {% comment %} <button id="open-sidebar" class="sidebar-btn">
+        <span class="material-symbols-outlined">menu</span>
+    </button> {% endcomment %}
+    <h1 class="dashboard-title">Add Order from Excel</h1>
+</div>
 
-    <form method="POST" enctype="multipart/form-data" class="mb-5">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label">Select Container</label>
-            <select class="form-select" name="container" required>
-                <option value="">-- Select Container --</option>
-                {% for container in containers %}
-                    <option value="{{ container.container_id }}"
-                        {% if container.container_id == selected_container %}selected{% endif %}>
-                        {{ container.container_id }} - {{ container.container_name }}
-                    </option>
-                {% endfor %}
-            </select>
+<form method="POST" enctype="multipart/form-data" class="order-form">
+    {% csrf_token %}
+    <div class="card">
+        <h2 class="card-title">Upload Order File</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="container-select">Select Container</label>
+                <select id="container-select" name="container" required>
+                    <option value="">-- Select Container --</option>
+                    {% for container in containers %}
+                        <option value="{{ container.container_id }}" {% if container.container_id == selected_container %}selected{% endif %}>
+                            {{ container.container_id }} - {{ container.container_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="excel-file-upload">Upload Excel File</label>
+                <input type="file" id="excel-file-upload" name="excel_file" required>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label class="form-label">Upload Excel</label>
-            <input type="file" class="form-control" name="excel_file" required>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Upload & Preview</button>
         </div>
-
-        <button type="submit" class="btn btn-primary">Upload & Preview</button>
-    </form>
+    </div>
+</form>
 
     {% if preview_data %}
-    <hr>
-    <h4 class="mb-3">Preview Data</h4>
-    <form method="POST" action="{% url 'confirm_orders_excel' %}">
-        {% csrf_token %}
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        {% for header in preview_data.0.keys %}
-                            <th class="sortable">{{ header }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in preview_data %}
+    <div class="card-custom mt-4">
+        <h2 class="section-title">Preview Data</h2>
+        <form method="POST" action="{% url 'confirm_orders_excel' %}">
+            {% csrf_token %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
-                            {% for key, value in row.items %}
-                                <td>
-                                    {% if key == "Pictures" and value %}
-                                        {% for img_path in value %}
-                                            <img 
-                                                src="{{ MEDIA_URL }}{{ img_path|urlencode }}" 
-                                                class="img-thumbnail me-1 zoom-on-hover" 
-                                                width="80" height="80" 
-                                                alt="Order image">
-                                        {% endfor %}
-                                    {% else %}
-                                        {{ value }}
-                                    {% endif %}
-                                </td>
+                            {% for header in preview_data.0.keys %}
+                            <th scope="col" class="px-6 py-3 sortable">{{ header }}</th>
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <button type="submit" class="btn btn-success mt-3">Confirm Import</button>
-    </form>
+                    </thead>
+                    <tbody>
+                        {% for row in preview_data %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            {% for key, value in row.items %}
+                            <td class="px-6 py-4">
+                                {% if key == "Pictures" and value %}
+                                    {% for img_path in value %}
+                                        <img src="{{ MEDIA_URL }}{{ img_path|urlencode }}" class="img-thumbnail me-1 zoom-on-hover" width="60" height="60" alt="Order image">
+                                    {% endfor %}
+                                {% else %}
+                                    {{ value }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button type="submit" class="btn btn-primary-custom" style="background-color: #16a34a; background-color:#15803d">Confirm Import</button>
+            </div>
+        </form>
+    </div>
     {% endif %}
-</div>
+</main>
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    .zoom-on-hover { transition: transform 0.2s; cursor: pointer; }
+    .zoom-on-hover:hover { transform: scale(2.5); z-index: 10; position: relative; }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { background-color: #e5e7eb; }
+    /* Header */
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.sidebar-btn {
+    background-color: #1f2937;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 24px;
+    transition: background 0.3s;
+}
+
+.sidebar-btn:hover {
+    background-color: #111827;
+}
+
+.dashboard-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+/* Card */
+.card {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 800px;
+    margin-top: 16px;
+}
+
+/* Card title */
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1f2937;
+}
+
+/* Form row */
+.form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* Form group */
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.form-group input[type="file"],
+.form-group select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input[type="file"]:focus,
+.form-group select:focus {
+    border-color: #10b981; /* Green accent */
+}
+
+/* Button */
+.form-actions {
+    margin-top: 24px;
+    text-align: right;
+}
+
+.btn-primary {
+    background-color: #10b981;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #059669;
+}
+
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -81,16 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', (() => {
         const table = th.closest('table');
-        Array.from(table.querySelectorAll('tbody tr'))
+        const tbody = table.querySelector('tbody');
+        Array.from(tbody.querySelectorAll('tr'))
             .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
-            .forEach(tr => table.querySelector('tbody').appendChild(tr) );
+            .forEach(tr => tbody.appendChild(tr) );
     })));
 });
 </script>
-
-<style>
-.zoom-on-hover { transition: transform 0.2s; cursor: pointer; }
-.zoom-on-hover:hover { transform: scale(1.5); z-index: 10; position: relative; }
-th.sortable { cursor: pointer; }
-</style>
 {% endblock %}
+{% comment %} {% block extra_css %}
+<style>
+{% endblock %} {% endcomment %}
