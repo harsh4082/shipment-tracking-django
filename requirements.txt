@@ -13,3 +13,5 @@ reportlab==4.1.3        # To create PDF files (used in order exports)
 
 # Cryptography
 cryptography==41.0.4    # For encrypting/decrypting data (Fernet)
+
+

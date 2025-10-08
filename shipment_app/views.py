@@ -13,16 +13,23 @@ import re
 import xlsxwriter
 import openpyxl
 
-from .models import AdminTable, Customer, Container, Order , OrderFieldVisibility
+from .models import AdminTable, Customer, Container, Order, OrderFieldVisibility
 from .utils import generate_password, send_credentials_email, encrypt_text, decrypt_text
 from django.db.models import Sum
 
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
+
+from .utils import send_mail  # your existing email function
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.hashers import make_password
+
 
 # ----------------------------
 # Decorators
@@ -368,18 +375,6 @@ def add_order(request):
 
     return render(request, "add_order.html", {"customers": customers, "containers": containers})
 
-
-import os
-import re
-import openpyxl
-from django.core.files import File
-from django.core.files.storage import FileSystemStorage
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.conf import settings
-
-from .models import Container, Customer, Order
-# from .decorators import admin_required
 
 
 @admin_required
@@ -879,13 +874,7 @@ def user_container_orders(request, enc_container_id):
 # ----------------------------
 # Export orders to PDF (with images)
 # ----------------------------
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Image
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
-import io
-import os
-from django.conf import settings
+
 
 @customer_required
 def export_orders_pdf(request, enc_container_id):
@@ -1054,17 +1043,7 @@ def custom_404_view(request, exception=None):
 def custom_500_view(request):
     return render(request, "500.html", status=500)
 
-from .utils import send_mail  # your existing email function
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth.hashers import make_password
-from .models import Customer
 
-from django.core.mail import send_mail
-from django.conf import settings
 
 def user_forgot_password(request):
     if request.method == "POST":
