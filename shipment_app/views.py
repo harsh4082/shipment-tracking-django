@@ -13,7 +13,7 @@ import re
 import xlsxwriter
 import openpyxl
 
-from .models import AdminTable, Customer, Container, Order
+from .models import AdminTable, Customer, Container, Order , OrderFieldVisibility
 from .utils import generate_password, send_credentials_email, encrypt_text, decrypt_text
 from django.db.models import Sum
 
@@ -146,7 +146,7 @@ def view_customer_view(request):
 
 def field_visibility_view(request):
     if request.method == 'POST':
-        for field in FieldVisibility.objects.all():
+        for field in OrderFieldVisibility .objects.all():
             # The value will be 'on' if checked, None if not.
             is_visible = request.POST.get(field.field_name) == 'on'
             if field.is_visible != is_visible:
@@ -156,7 +156,7 @@ def field_visibility_view(request):
         return redirect('field_visibility')
 
     # For GET request
-    fields = FieldVisibility.objects.all().order_by('field_name')
+    fields = OrderFieldVisibility .objects.all().order_by('field_name')
     context = {
         'active_page': 'field_visibility',
         'fields': fields
@@ -599,22 +599,41 @@ def confirm_orders_excel(request):
 
 # view_orders_by_container
 
+from django.shortcuts import render, get_object_or_404
+from .models import Container, Order
+from .utils import encrypt_text, decrypt_text
+# from .decorators import admin_required
+
 @admin_required
 def view_orders_by_container(request):
     containers = Container.objects.all()
-    selected_container_id = request.GET.get("container")
+    selected_container_encrypted = request.GET.get("container")
+    selected_container_id = None
     orders = []
 
+    # Decrypt the container ID from query param
+    if selected_container_encrypted:
+        try:
+            selected_container_id = decrypt_text(selected_container_encrypted)
+        except:
+            selected_container_id = None
+
+    # Fetch orders if container is selected
     if selected_container_id:
         container = get_object_or_404(Container, container_id=selected_container_id)
         orders = Order.objects.filter(container=container).order_by("customer__customer_id")
 
+    # Encrypt container IDs for the dropdown
+    containers_with_encrypted = []
+    for container in containers:
+        container.encrypted_id = encrypt_text(container.container_id)
+        containers_with_encrypted.append(container)
+
     return render(request, "view_orders_by_container.html", {
-        "containers": containers,
+        "containers": containers_with_encrypted,
         "selected_container_id": selected_container_id,
         "orders": orders,
     })
-
 
 @admin_required
 def view_orders_by_customer(request):
@@ -642,18 +661,18 @@ def view_orders_by_customer(request):
         except signing.BadSignature:
             selected_customer_id = None
 
-    container = None
+    # Populate customer dropdown for selected container
     if selected_container_id:
         container = get_object_or_404(Container, container_id=selected_container_id)
-
-        # Populate customer dropdown for selected container
-        customers_raw = Order.objects.filter(container=container).values_list('customer__customer_id', flat=True).distinct()
+        customers_raw = Order.objects.filter(container=container)\
+                        .values_list('customer__customer_id', 'customer__name')\
+                        .distinct()
         customers = []
-        for c in customers_raw:
-            signed_data = signing.dumps({'container': selected_container_id, 'customer': c})
-            customers.append({'id': c, 'signed': signed_data})
+        for c_id, c_name in customers_raw:
+            signed_data = signing.dumps({'container': selected_container_id, 'customer': c_id})
+            customers.append({'id': c_id, 'name': c_name, 'signed': signed_data})
 
-    # Fetch orders only if both container and customer are selected
+    # Fetch orders if both container and customer selected
     if selected_container_id and selected_customer_id:
         orders = Order.objects.filter(
             container__container_id=selected_container_id,
@@ -665,6 +684,7 @@ def view_orders_by_customer(request):
     for c in containers:
         signed_containers.append({
             'id': c.container_id,
+            'name': c.container_name,
             'signed': signing.dumps(c.container_id)
         })
 
@@ -676,6 +696,41 @@ def view_orders_by_customer(request):
         "orders": orders,
     })
 
+# views.py
+from django.http import JsonResponse
+from django.core import signing
+from .models import Container, Order
+
+@admin_required
+def get_customers_by_container(request):
+    container_signed = request.GET.get("container")
+    response = {"customers": []}
+
+    if container_signed:
+        try:
+            # Decode the signed container ID
+            container_id = signing.loads(container_signed)
+            container = Container.objects.get(container_id=container_id)
+
+            # Get unique customers in this container
+            customers_raw = Order.objects.filter(container=container).values_list('customer__customer_id', 'customer__name').distinct()
+            
+            customers_list = []
+            for cust_id, cust_name in customers_raw:
+                # Sign customer data for security
+                signed_data = signing.dumps({"container": container_id, "customer": cust_id})
+                customers_list.append({
+                    "id": cust_id,
+                    "name": cust_name,
+                    "signed": signed_data
+                })
+
+            response["customers"] = customers_list
+
+        except (Container.DoesNotExist, signing.BadSignature):
+            pass
+
+    return JsonResponse(response)
 
 
 
@@ -998,3 +1053,63 @@ def custom_404_view(request, exception=None):
 
 def custom_500_view(request):
     return render(request, "500.html", status=500)
+
+from .utils import send_mail  # your existing email function
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.hashers import make_password
+from .models import Customer
+
+from django.core.mail import send_mail
+from django.conf import settings
+
+def user_forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        try:
+            user = Customer.objects.get(email=email)
+            # Encode email for secure URL
+            uid = urlsafe_base64_encode(force_bytes(email))
+            reset_link = request.build_absolute_uri(
+                reverse('user_reset_password', kwargs={'uidb64': uid})
+            )
+
+            # Send email
+            subject = "Password Reset Request"
+            message = f"Click the link below to reset your password:\n\n{reset_link}"
+            from_email = settings.DEFAULT_FROM_EMAIL  # make sure this is set in settings.py
+            recipient_list = [email]
+
+            send_mail(subject, message, from_email, recipient_list)
+
+            messages.success(request, "Password reset link has been sent to your email.")
+            return redirect('user_login')
+        except Customer.DoesNotExist:
+            messages.error(request, "Email ID not found.")
+    
+    return render(request, "user_forgot_password.html")
+
+
+def user_reset_password(request, uidb64):
+    try:
+        email = force_str(urlsafe_base64_decode(uidb64))
+        user = Customer.objects.get(email=email)
+    except (TypeError, ValueError, OverflowError, Customer.DoesNotExist):
+        messages.error(request, "Invalid reset link.")
+        return redirect('user_login')
+
+    if request.method == "POST":
+        new_password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+        else:
+            user.password = make_password(new_password)
+            user.save()
+            messages.success(request, "Password updated successfully. Please login.")
+            return redirect('user_login')
+
+    return render(request, "user_reset_password.html", {"email": email})

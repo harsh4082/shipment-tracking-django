@@ -6,31 +6,34 @@
     <title>{% block title %}ShipTrack{% endblock %}</title>
     <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    {% comment %} <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script> {% endcomment %}
     {% block extra_head %}{% endblock %}
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#1193d4",
-                        "background-light": "#f6f7f8",
-                        "background-dark": "#101c22"
-                    },
-                    fontFamily: {
-                        display: "Inter"
-                    },
-                    borderRadius: {
-                        DEFAULT: "0.25rem",
-                        lg: "0.5rem",
-                        xl: "0.75rem",
-                        full: "9999px"
-                    }
-                }
-            }
-        };
-    </script>
+    <!-- ✅ Tailwind (only once, inside <head>) -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#1193d4",
+          "background-light": "#f6f7f8",
+          "background-dark": "#101c22",
+        },
+        fontFamily: {
+          display: ["Inter", "sans-serif"],
+        },
+        borderRadius: {
+          DEFAULT: "0.25rem",
+          lg: "0.5rem",
+          xl: "0.75rem",
+          full: "9999px",
+        },
+      },
+    },
+  };
+</script>
+
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <style>
         * {
@@ -85,38 +88,38 @@
                     </button>
                 </div>
                 <nav class="flex flex-col gap-2">
-                    <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'dashboard' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
+                    <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'admin_dashboard' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
                         <span class="material-symbols-outlined text-xl">dashboard</span>
                         <span>Dashboard</span>
                     </a>
-                    <a href="{% url 'manage_container' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'containers' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
+                    <a href="{% url 'admin_containers' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'admin_containers' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
                         <span class="material-symbols-outlined text-xl">directions_boat</span>
                         <span>Containers</span>
                     </a>
-                    <a href="{% url 'manage_customer' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'customers' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
+                    <a href="{% url 'admin_customers' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base {% if active_page == 'admin_customers' %}bg-primary/10 text-primary font-semibold{% else %}text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20{% endif %}">
                         <span class="material-symbols-outlined text-xl">groups</span>
                         <span>Customers</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
+                    <a href="{% url 'upload_orders_excel' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
                         <span class="material-symbols-outlined text-xl">add_box</span>
                         <span>Add Order</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
+                    <a href="{% url 'view_orders_by_container' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
                         <span class="material-symbols-outlined text-xl">find_in_page</span>
                         <span>View Order</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
+                    <a href="{% url 'view_orders_by_customer' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
                         <span class="material-symbols-outlined text-xl">person_search</span>
                         <span>View Customer</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
+                    <a href="{% url 'manage_field_visibility' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base">
                         <span class="material-symbols-outlined text-xl">visibility</span>
                         <span>Select Field</span>
                     </a>
                 </nav>
             </div>
             <div>
-                <a class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base" href="#">
+                <a href="{% url 'admin_logout' %}" class="flex items-center gap-3 px-3 sm:px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-sm sm:text-base" href="#">
                     <span class="material-symbols-outlined text-xl">logout</span>
                     <span>Logout</span>
                 </a>
@@ -126,40 +129,31 @@
         {% endblock %}
         </div>
 
-    <script>
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        const openBtn = document.getElementById('open-sidebar');
-        const closeBtn = document.getElementById('close-sidebar');
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const openBtn = document.getElementById('open-sidebar');
+  const closeBtn = document.getElementById('close-sidebar');
 
-        function openSidebar() {
-            sidebar.classList.add('active');
-            overlay.classList.remove('hidden');
-        }
+  function openSidebar() {
+    sidebar.classList.add('active');
+    overlay.classList.remove('hidden');
+  }
 
-        function closeSidebar() {
-            sidebar.classList.remove('active');
-            overlay.classList.add('hidden');
-        }
+  function closeSidebar() {
+    sidebar.classList.remove('active');
+    overlay.classList.add('hidden');
+  }
 
-        // The open button will be inside the content block, so check if it exists
-        if (openBtn) {
-            openBtn.addEventListener('click', openSidebar);
-        }
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeSidebar);
-        }
-        if (overlay) {
-            overlay.addEventListener('click', closeSidebar);
-        }
+  if (openBtn) openBtn.addEventListener('click', openSidebar);
+  if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+  if (overlay) overlay.addEventListener('click', closeSidebar);
 
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 1024) {
-                closeSidebar();
-            }
-        });
-    </script>
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) closeSidebar();
+  });
+</script>
 
-    {% block extra_js %}{% endblock %}
+{% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,34 +1,113 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html class="" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>User Login - ShipTrack</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1193d4",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22"
+                    },
+                    fontFamily: {
+                        display: "Inter"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
 
-{% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow">
-                <div class="card-header text-center bg-primary text-white">
-                    <h4>User Login</h4>
-                </div>
-                <div class="card-body">
+<body class="bg-background-light dark:bg-background-dark font-display">
+    <div class="flex min-h-screen w-full items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="rounded-xl bg-white dark:bg-background-dark/50 p-6 sm:p-8 shadow-md">
+                <h1 class="text-center text-xl font-bold text-gray-900 dark:text-white">User Login</h1>
+                <p class="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
+                    Track your shipments and manage orders
+                </p>
+
+                <form method="POST" class="mt-6 space-y-4">
+                    {% csrf_token %}
+
                     {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                        {% endfor %}
+                        <div class="space-y-2">
+                            {% for message in messages %}
+                            <div class="rounded-lg p-3 text-center text-sm font-medium 
+                                {% if message.tags == 'error' %} bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 {% endif %}
+                                {% if message.tags == 'success' %} bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 {% endif %}">
+                                {{ message }}
+                            </div>
+                            {% endfor %}
+                        </div>
                     {% endif %}
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="user_id" class="form-label">User ID</label>
-                            <input type="text" class="form-control" id="user_id" name="user_id" required>
+
+                    <div>
+                        <label for="user_id" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">User ID</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">badge</span>
+                            <input type="text" name="user_id" id="user_id" class="w-full rounded-lg border border-gray-300 bg-white p-2.5 pl-10 text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <div>
+                        <label for="password" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">lock</span>
+                            <input type="password" name="password" id="password" class="w-full rounded-lg border border-gray-300 bg-white p-2.5 pl-10 pr-10 text-gray-900 focus:border-primary focus:ring-2 focus:ring-primary/50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary" required>
+                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400" onclick="togglePassword()">visibility</span>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                    </form>
-                </div>
+                    </div>
+
+                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-opacity-90">
+                        <span class="material-symbols-outlined">login</span>
+                        Login
+                    </button>
+                </form>
             </div>
+
+            <p class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                Not a user? 
+                <a href="{% url 'home' %}" class="font-medium text-primary hover:underline">
+                    Return to main page
+                </a>
+            </p>
+            <p class="mt-2 text-sm text-center">
+                <a href="{% url 'user_forgot_password' %}" class="text-primary hover:underline">
+                    Forgot Password?
+                </a>
+            </p>
+
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = event.currentTarget;
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.textContent = "visibility_off";
+            } else {
+                passwordInput.type = "password";
+                icon.textContent = "visibility";
+            }
+        }
+    </script>
+</body>
+</html>

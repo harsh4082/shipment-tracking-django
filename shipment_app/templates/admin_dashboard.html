@@ -1,78 +1,72 @@
-{% extends "base.html" %}
-{% block title %}Admin Dashboard{% endblock %}
+{% extends "admin_base.html" %}
+
+{% block title %}Ship Tracking Dashboard{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4 text-center">Welcome, Admin!</h2>
+<main class="flex-1 w-full lg:w-auto lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+    <div class="flex items-center gap-4 mb-6 sm:mb-8">
+        <button id="open-sidebar" class="lg:hidden text-gray-900 dark:text-white">
+            <span class="material-symbols-outlined text-3xl">menu</span>
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+    </div>
 
-    <div class="row g-4">
-
-        <!-- Manage Containers -->
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-center">
-                    <h5 class="card-title">Manage Containers</h5>
-                    <p class="card-text">Add, edit or delete containers.</p>
-                    <a href="{% url 'admin_containers' %}" class="btn btn-success mt-auto">Go</a>
-                </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-full">
+        
+        <div class="bg-white dark:bg-background-dark/50 rounded-lg shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 sm:p-6 flex-grow flex flex-col">
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Manage Containers</h2>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 mb-3 sm:mb-4 flex-grow">Add, edit or delete containers</p>
+                <a href="{% url 'admin_containers' %}" class="w-full text-center bg-primary text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-opacity-90 transition-colors">Go</a>
             </div>
+            <div class="h-32 sm:h-40 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCCYih59Q-M_yEdYYvkAPdfZ6sGYm52-biWSUS-eHzTel_9rH2hthRP-gfyjg-TbaZmYyeM2t2HerSNUz0apz8_TcQxvzKN1mNEWMCIAVv1Vn05-Mn7wHMWLaMT6EXgzNL9xuRXVnRDh_H5GY3r6OSS5tmxf_g72P5krLxhF7nLtYXFyLjKcoUuO7lFu2SsLv8EIVyTvPDMtSfICSsxaECaIj_QmquAKpeOStsZkYKQCuAYc6pi7UIfZtManNYcTGzs4DkY0Vtb0sD_');"></div>
         </div>
 
-        <!-- Manage Customers -->
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-center">
-                    <h5 class="card-title">Manage Customers</h5>
-                    <p class="card-text">Add, edit or delete customers.</p>
-                    <a href="{% url 'admin_customers' %}" class="btn btn-primary mt-auto">Go</a>
-                </div>
+        <div class="bg-white dark:bg-background-dark/50 rounded-lg shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 sm:p-6 flex-grow flex flex-col">
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Manage Customers</h2>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 mb-3 sm:mb-4 flex-grow">Add, edit or delete customers</p>
+                <a href="{% url 'admin_customers' %}" class="w-full text-center bg-primary text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-opacity-90 transition-colors">Go</a>
             </div>
+            <div class="h-32 sm:h-40 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBtSXfiPEztVjbGAgy8uPm6vnbzuwFGKvJ5TgUZhq1RXj30hortA4HgPybqngyqaJo-PD4cVLSTP0AL8sHqul4saKwaJAzQ6WrQdezKkHAdi0HXjPClMdFdrBjRQov-f2qYCSXfGdwBdlZIW_TtS0YksC08RTinBMJv8_U2MOy3K8cHSH9EE82AZSHtjkC29xGQA1b9hyaPtc8V0Y-JPQZ_kbqN5t62IkfzfGT1_DRJeb-docll6KtwSgtjbAuaUbVeHz_Lk95V1NVO');"></div>
         </div>
 
-        <!-- Upload Orders -->
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-center">
-                    <h5 class="card-title">Add Orders</h5>
-                    <p class="card-text">Upload orders via Excel.</p>
-                    <a href="{% url 'upload_orders_excel' %}" class="btn btn-warning mt-auto">Go</a>
-                </div>
+        <div class="bg-white dark:bg-background-dark/50 rounded-lg shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 sm:p-6 flex-grow flex flex-col">
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Add Orders</h2>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 mb-3 sm:mb-4 flex-grow">Upload orders via Excel</p>
+                <a href="{% url 'upload_orders_excel' %}" class="w-full text-center bg-primary text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-opacity-90 transition-colors">Go</a>
             </div>
+            <div class="h-32 sm:h-40 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAMyvIRxzQgJjDSayZga9yG2D_NKPqGR5Wp0vJB9i9xdQ6DlFXNqEDYonC684EC03Wbo70tzR9btQMMb3eBtIYkwJl5FTXzkqAkUx1xKWToc_U-dcYTFg31-VOvff1FuAn6mkJg-nZTUlxabdMyQc59wwW5V0EMZe9Sl60YV1qUwMz7e-7eWIN-FC3wXhsIzr0ZP8F6m2AUqXxP2ya1iH2NM3UQaaPcMxKPhHqbCVhlWW5ivsqeIkCv9vEhKKmgT0Y4YKapgItXhFJ0');"></div>
         </div>
 
-        <!-- View Orders by Container -->
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-center">
-                    <h5 class="card-title">View Orders (Container)</h5>
-                    <p class="card-text">View all orders filtered by container.</p>
-                    <a href="{% url 'view_orders_by_container' %}" class="btn btn-info mt-auto">Go</a>
-                </div>
+        <div class="bg-white dark:bg-background-dark/50 rounded-lg shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 sm:p-6 flex-grow flex flex-col">
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">View Orders (Container)</h2>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 mb-3 sm:mb-4 flex-grow">View all orders filtered by container</p>
+                <a href="{% url 'view_orders_by_container' %}" class="w-full text-center bg-primary text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-opacity-90 transition-colors">Go</a>
             </div>
+            <div class="h-32 sm:h-40 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBONTy1d_2_COFtYwztgZVHAuKSSuujjC6oNjA6oaeZQgJcwYw2Ca_1NnhzRyQ0lNJIjGVSMcvb0KD1J0GGXOxAokiZFAIr5HEpBUlmtxUc44HYa_PI143ex1GNTb2b9T4B0nPEqIhCps1Fkb95VrVco1L5mc3iELPUI4gHnlV2Pt-m2MIXZGsk8O2h-e--Du-ELB0E67ZW4-mA1h-sFTUqKxD4sBQi9xWoZAot9-QqjJtsmkQCzMKEE9a3Kue26v1C6wIcQj80cm5Z');"></div>
+        </div>
+        
+        <div class="bg-white dark:bg-background-dark/50 rounded-lg shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 sm:p-6 flex-grow flex flex-col">
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">View Order by Customer</h2>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 mb-3 sm:mb-4 flex-grow">View all orders filtered by customer</p>
+                <a href="{% url 'view_orders_by_customer' %}" class="w-full text-center bg-primary text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-opacity-90 transition-colors">Go</a>
+            </div>
+            <div class="h-32 sm:h-40 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAR5YJ9IgmCkIw96yZpOQBScLPAKzdpiHZdGy13hQ5FHpradC1u--OtLLFcaTOb8k_mXsRfY8TXgkaqEBF4VTkfyXmXVuUKEwPMmcgb4PKgkA07VCeGC4_dXXJr7Ztg5RJb28j1cbqTES8yz3g2afk8I4tFh4rdPph0z6zDlHW5urRdV5x4WW3oa2lP5dZ0AhUFG9zpp8CK66KrJRByhWhG2e11MgMVVm6i4iC6xuHt32DHGHOO6KvBmW0WbfRFhzeVWWQK7uLIoaOb');"></div>
         </div>
 
-        <!-- View Orders by Customer -->
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-center">
-                    <h5 class="card-title">View Orders (Customer)</h5>
-                    <p class="card-text">View all orders filtered by customer.</p>
-                    <a href="{% url 'view_orders_by_customer' %}" class="btn btn-secondary mt-auto">Go</a>
-                </div>
+        <div class="bg-white dark:bg-background-dark/50 rounded-lg shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 sm:p-6 flex-grow flex flex-col">
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Field Visibility</h2>
+                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 mb-3 sm:mb-4 flex-grow">Select which fields are visible to customers</p>
+                 <a href="{% url 'manage_field_visibility' %}" class="w-full text-center bg-primary text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold hover:bg-opacity-90 transition-colors">Go</a>
             </div>
-        </div>
-
-        <!-- Manage Field Visibility -->
-        <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm">
-                <div class="card-body d-flex flex-column justify-content-center">
-                    <h5 class="card-title">Field Visibility</h5>
-                    <p class="card-text">Select which fields are visible to customers.</p>
-                    <a href="{% url 'manage_field_visibility' %}" class="btn btn-danger mt-auto">Go</a>
-                </div>
-            </div>
+            <div class="h-32 sm:h-40 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAXh6YrjaUjA8vCPhlvFvxA-LshtbMGrJmscH0fwe332JKRPkK0F71BkJnGi-5nPNTUiP71odeQgJXIGmpXWRUyIFjEaJX_Ikk-7c2HZacPrcdGvVFmgbjMixhG6XqkaxTqWe2Ei-SGgIsskJz08MaB_j5p4uEmf_ttuSObKt2OhNlYZoKzqCZueb3GzsvvFSy8-dFNNBezbEkKzTq3FSG_46Hs1J71z2VPNnklM1OmAbQ_s0k7k9EENBiHDnvtX3VZJ-ObpyvUavo1');"></div>
         </div>
 
     </div>
-</div>
+</main>
 {% endblock %}

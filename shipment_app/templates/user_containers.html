@@ -2,22 +2,28 @@
 {% block title %}My Containers{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Your Containers</h2>
-<div class="row g-3">
-  {% for item in container_links %}
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">{{ item.container.container_name }}</h5>
-          <p class="card-text"><strong>ID:</strong> {{ item.container.container_id }}</p>
-          <a href="{% url 'user_container_orders' item.enc_id %}" class="btn btn-primary w-100">View Orders</a>
+<div class="max-w-6xl mx-auto mt-8 px-4">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Your Containers</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {% for item in container_links %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-lg transition p-5 flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ item.container.container_name }}</h3>
+                <p class="text-gray-500 dark:text-gray-400"><strong>ID:</strong> {{ item.container.container_id }}</p>
+            </div>
+            <a href="{% url 'user_container_orders' item.enc_id %}" 
+               class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-center transition">
+               View Orders
+            </a>
         </div>
-      </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="bg-blue-100 dark:bg-gray-700 text-blue-700 dark:text-gray-300 p-4 rounded">
+                No containers found.
+            </div>
+        </div>
+        {% endfor %}
     </div>
-  {% empty %}
-    <div class="col-12">
-      <div class="alert alert-info">No containers found.</div>
-    </div>
-  {% endfor %}
 </div>
 {% endblock %}

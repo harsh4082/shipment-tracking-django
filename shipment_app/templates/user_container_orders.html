@@ -2,82 +2,91 @@
 {% block title %}Orders in {{ container.container_name }}{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Orders in {{ container.container_name }}</h2>
+<div class="max-w-7xl mx-auto mt-8 px-4">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Orders in {{ container.container_name }}</h2>
 
-{% if orders %}
-<table class="table table-bordered table-striped table-sm">
-  <thead class="table-dark">
-    <tr>
-      <th>#</th>
-      {% if "shipping_mark" in visible_fields %}<th>Shipping Mark</th>{% endif %}
-      {% if "description" in visible_fields %}<th>Description</th>{% endif %}
-      {% if "item_no_spec" in visible_fields %}<th>Item No./Specification</th>{% endif %}
-      {% if "material" in visible_fields %}<th>Material</th>{% endif %}
-      {% if "pictures" in visible_fields %}<th>Pictures</th>{% endif %}
-      {% if "ctns" in visible_fields %}<th>CTNs</th>{% endif %}
-      {% if "qty_per_ctn" in visible_fields %}<th>Qty/CTN</th>{% endif %}
-      {% if "total_qty" in visible_fields %}<th>Total Qty</th>{% endif %}
-      {% if "unit" in visible_fields %}<th>Unit</th>{% endif %}
-      {% if "cbm_per_ctn" in visible_fields %}<th>CBM/CTN</th>{% endif %}
-      {% if "cbm" in visible_fields %}<th>CBM</th>{% endif %}
-      {% if "total_cbm" in visible_fields %}<th>Total CBM</th>{% endif %}
-      {% if "wt_per_ctn" in visible_fields %}<th>Wt/CTN</th>{% endif %}
-      {% if "total_wt" in visible_fields %}<th>Total Wt</th>{% endif %}
-      {% if "supplier" in visible_fields %}<th>Supplier</th>{% endif %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for order in orders %}
-    <tr>
-      <td>{{ forloop.counter }}</td>
-      {% if "shipping_mark" in visible_fields %}<td>{{ order.shipping_mark }}</td>{% endif %}
-      {% if "description" in visible_fields %}<td>{{ order.description }}</td>{% endif %}
-      {% if "item_no_spec" in visible_fields %}<td>{{ order.item_no_spec }}</td>{% endif %}
-      {% if "material" in visible_fields %}<td>{{ order.material }}</td>{% endif %}
-      {% if "pictures" in visible_fields %}
-        <td>
-          {% if order.pictures %}
-            <img src="{{ order.pictures.url }}" alt="Order Pic" style="width:60px;height:60px;object-fit:cover;">
-          {% else %}
-            -
-          {% endif %}
-        </td>
-      {% endif %}
-      {% if "ctns" in visible_fields %}<td>{{ order.ctns }}</td>{% endif %}
-      {% if "qty_per_ctn" in visible_fields %}<td>{{ order.qty_per_ctn }}</td>{% endif %}
-      {% if "total_qty" in visible_fields %}<td>{{ order.total_qty }}</td>{% endif %}
-      {% if "unit" in visible_fields %}<td>{{ order.unit }}</td>{% endif %}
-      {% if "cbm_per_ctn" in visible_fields %}<td>{{ order.cbm_per_ctn }}</td>{% endif %}
-      {% if "cbm" in visible_fields %}<td>{{ order.cbm }}</td>{% endif %}
-      {% if "total_cbm" in visible_fields %}<td>{{ order.total_cbm }}</td>{% endif %}
-      {% if "wt_per_ctn" in visible_fields %}<td>{{ order.wt_per_ctn }}</td>{% endif %}
-      {% if "total_wt" in visible_fields %}<td>{{ order.total_wt }}</td>{% endif %}
-      {% if "supplier" in visible_fields %}<td>{{ order.supplier }}</td>{% endif %}
-    </tr>
-    {% endfor %}
-  </tbody>
-  <tfoot>
+    {% if orders %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-auto">
+            <thead class="bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-400 text-sm uppercase">
+                <tr>
+                    <th class="px-3 py-2 text-left">#</th>
+                    {% if "shipping_mark" in visible_fields %}<th class="px-3 py-2 text-left">Shipping Mark</th>{% endif %}
+                    {% if "description" in visible_fields %}<th class="px-3 py-2 text-left">Description</th>{% endif %}
+                    {% if "item_no_spec" in visible_fields %}<th class="px-3 py-2 text-left">Item No./Spec</th>{% endif %}
+                    {% if "material" in visible_fields %}<th class="px-3 py-2 text-left">Material</th>{% endif %}
+                    {% if "pictures" in visible_fields %}<th class="px-3 py-2 text-left">Pictures</th>{% endif %}
+                    {% if "ctns" in visible_fields %}<th class="px-3 py-2 text-left">CTNs</th>{% endif %}
+                    {% if "qty_per_ctn" in visible_fields %}<th class="px-3 py-2 text-left">Qty/CTN</th>{% endif %}
+                    {% if "total_qty" in visible_fields %}<th class="px-3 py-2 text-left">Total Qty</th>{% endif %}
+                    {% if "unit" in visible_fields %}<th class="px-3 py-2 text-left">Unit</th>{% endif %}
+                    {% if "cbm_per_ctn" in visible_fields %}<th class="px-3 py-2 text-left">CBM/CTN</th>{% endif %}
+                    {% if "cbm" in visible_fields %}<th class="px-3 py-2 text-left">CBM</th>{% endif %}
+                    {% if "total_cbm" in visible_fields %}<th class="px-3 py-2 text-left">Total CBM</th>{% endif %}
+                    {% if "wt_per_ctn" in visible_fields %}<th class="px-3 py-2 text-left">Wt/CTN</th>{% endif %}
+                    {% if "total_wt" in visible_fields %}<th class="px-3 py-2 text-left">Total Wt</th>{% endif %}
+                    {% if "supplier" in visible_fields %}<th class="px-3 py-2 text-left">Supplier</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                {% for order in orders %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-3 py-2">{{ forloop.counter }}</td>
+                    {% if "shipping_mark" in visible_fields %}<td class="px-3 py-2">{{ order.shipping_mark|default:"-" }}</td>{% endif %}
+                    {% if "description" in visible_fields %}<td class="px-3 py-2">{{ order.description|default:"-" }}</td>{% endif %}
+                    {% if "item_no_spec" in visible_fields %}<td class="px-3 py-2">{{ order.item_no_spec|default:"-" }}</td>{% endif %}
+                    {% if "material" in visible_fields %}<td class="px-3 py-2">{{ order.material|default:"-" }}</td>{% endif %}
+                    {% if "pictures" in visible_fields %}
+                    <td class="px-3 py-2">
+                        {% if order.pictures %}
+                        <img src="{{ order.pictures.url }}" alt="Order Pic" class="w-16 h-16 object-cover rounded">
+                        {% else %}-{% endif %}
+                    </td>
+                    {% endif %}
+                    {% if "ctns" in visible_fields %}<td class="px-3 py-2">{{ order.ctns|default:"-" }}</td>{% endif %}
+                    {% if "qty_per_ctn" in visible_fields %}<td class="px-3 py-2">{{ order.qty_per_ctn|default:"-" }}</td>{% endif %}
+                    {% if "total_qty" in visible_fields %}<td class="px-3 py-2">{{ order.total_qty|default:"-" }}</td>{% endif %}
+                    {% if "unit" in visible_fields %}<td class="px-3 py-2">{{ order.unit|default:"-" }}</td>{% endif %}
+                    {% if "cbm_per_ctn" in visible_fields %}<td class="px-3 py-2">{{ order.cbm_per_ctn|default:"-" }}</td>{% endif %}
+                    {% if "cbm" in visible_fields %}<td class="px-3 py-2">{{ order.cbm|default:"-" }}</td>{% endif %}
+                    {% if "total_cbm" in visible_fields %}<td class="px-3 py-2">{{ order.total_cbm|default:"-" }}</td>{% endif %}
+                    {% if "wt_per_ctn" in visible_fields %}<td class="px-3 py-2">{{ order.wt_per_ctn|default:"-" }}</td>{% endif %}
+                    {% if "total_wt" in visible_fields %}<td class="px-3 py-2">{{ order.total_wt|default:"-" }}</td>{% endif %}
+                    {% if "supplier" in visible_fields %}<td class="px-3 py-2">{{ order.supplier|default:"-" }}</td>{% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Totals -->
     {% if "total_qty" in visible_fields %}
-    <tr class="table-warning">
-      <th colspan="8" class="text-end">Total Quantity</th>
-      <th>{{ total_qty_sum }}</th>
-      <th colspan="7"></th>
-    </tr>
+    <div class="mt-4 text-right font-semibold text-gray-800 dark:text-white">
+        Total Quantity: {{ total_qty_sum }}
+    </div>
     {% endif %}
-  </tfoot>
-</table>
-{% else %}
-<div class="alert alert-info">No orders found in this container.</div>
-{% endif %}
 
-<div class="mb-3">
-  <a href="{% url 'export_orders_pdf' enc_container_id %}" class="btn btn-danger">
-    Export PDF
-  </a>
-  <a href="{% url 'export_orders_excel' enc_container_id %}" class="btn btn-success">
-    Export Excel
-  </a>
+    <!-- Export Buttons -->
+    <div class="flex flex-col sm:flex-row gap-4 mt-6">
+        <a href="{% url 'export_orders_pdf' enc_container_id %}" 
+           class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg text-center transition">
+           Export PDF
+        </a>
+        <a href="{% url 'export_orders_excel' enc_container_id %}" 
+           class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg text-center transition">
+           Export Excel
+        </a>
+    </div>
+
+    <a href="{% url 'user_containers' %}" 
+       class="inline-block mt-6 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition">
+       Back to Containers
+    </a>
+
+    {% else %}
+    <div class="bg-blue-100 dark:bg-gray-700 text-blue-700 dark:text-gray-300 p-4 rounded">
+        No orders found in this container.
+    </div>
+    {% endif %}
 </div>
-
-<a href="{% url 'user_containers' %}" class="btn btn-secondary mt-3">Back to Containers</a>
 {% endblock %}
